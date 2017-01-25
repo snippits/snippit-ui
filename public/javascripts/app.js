@@ -11,7 +11,7 @@ function loadCode(id) {
             document.getElementById("code_div").innerHTML = "Code not found";
         }
     };
-    xhttp.open("GET", "output/phase-code-"+id, true);
+    xhttp.open("GET", "output/phase-code-" + id + "?_=" + new Date().getTime(), true);
     xhttp.send();
 }
 
@@ -25,7 +25,7 @@ function loadProfResult(id) {
             document.getElementById("prof_div").innerHTML = "Profiling result not found";
         }
     };
-    xhttp.open("GET", "output/phase-prof-"+id, true);
+    xhttp.open("GET", "output/phase-prof-" + id + "?_=" + new Date().getTime(), true);
     xhttp.send();
 }
 
