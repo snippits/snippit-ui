@@ -69,7 +69,7 @@ def parse_codes(data):
     for key in file_content_map:
         output_str += "==> " + key + " <==\n"
         for line in file_content_map[key]:
-            if (line[0] > '0' and line[0] < '9'):
+            if (line[0] >= '0' and line[0] <= '9'):
                 output_str += line
             else:
                 # Align the text when it has no line #
