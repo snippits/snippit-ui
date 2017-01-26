@@ -40,6 +40,8 @@ def read_single_phase_file(fname):
         if (line == '==== Program Profile ====\n'): prof_flag = True
         if (prof_flag): prof_string += line
 
+    if (json_code_list == ""):
+        json_code_list = "{}"
     return {'code': json.loads(json_code_list), 'prof': prof_string}
 
 def read_source_code_file(fname):
