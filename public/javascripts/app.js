@@ -1,6 +1,3 @@
-google.charts.load('current', {packages: ['corechart', 'line']});
-google.charts.setOnLoadCallback(main_fun);
-
 function find_firstline_with_number(content) {
     var lines = content.split("\n");
     for (var i = 0; i < lines.length; i++) {
@@ -47,6 +44,21 @@ function loadCode(id) {
     xhttp.send();
 }
 
+
+function loadTreemap(id) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            draw_high_tree(JSON.parse(this.responseText));
+        }
+        else {
+            draw_high_tree([{name: "Profiling result not found", id: "id_0", value: 1}]);
+        }
+    };
+    xhttp.open("GET", "output/phase-treemap-" + id + "?_=" + new Date().getTime(), true);
+    xhttp.send();
+}
+
 function loadProfResult(id) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -61,50 +73,148 @@ function loadProfResult(id) {
     xhttp.send();
 }
 
-function loadPhaseHistory() {
+function loadPhaseHistory(similarity_threshold) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            drawBasic(JSON.parse(this.responseText))
+            draw_highchart(JSON.parse(this.responseText));
         }
     };
-    xhttp.open("GET", "output/phase_history.json?_=" + new Date().getTime(), true);
+    similarity_threshold = parseInt(similarity_threshold / 10)
+    xhttp.open("GET", "output/phase-history-" + similarity_threshold + ".json?_=" + new Date().getTime(), true);
     xhttp.send();
 }
 
-function drawBasic(phase_history) {
-
-    var data = new google.visualization.DataTable();
-    data.addColumn('number', 'X');
-    data.addColumn('number', 'Phase #');
-
-    data.addRows(phase_history);
-
-    var options = {
-        hAxis: {
-            title: 'Window Count'
+function draw_highchart(data) {
+    // Create the chart
+    Highcharts.stockChart('container', {
+        plotOptions: {
+            series: {
+                animation: {
+                    duration: 2000,
+                },
+                allowPointSelect: true,
+            }
         },
-        vAxis: {
-            title: 'Phase Number'
-        }
-    };
+        rangeSelector: {
+            allButtonsEnabled: true,
+            selected: 4,
+            buttons: [{
+                type: 'millisecond',
+                count: 2000,
+                text: 'ms'
+            }, {
+                type: 'second',
+                count: 10,
+                text: '1s'
+            }, {
+                type: 'minute',
+                count: 1,
+                text: '1M'
+            }, {
+                type: 'hour',
+                count: 1,
+                text: '1H'
+            }, {
+                type: 'all',
+                text: 'All'
+            }],
+            inputDateFormat: '%H:%M:%S.%L',
+            inputEditDateFormat: '%H:%M:%S.%L',
+        },
 
-    function selectHandler() {
-        var selectedItem = chart.getSelection()[0];
-        if (selectedItem) {
-            var topping = data.getValue(selectedItem.row, 1);
-            loadProfResult(topping);
-            loadCode(topping);
-        }
-    }
+        title: {
+            text: 'Phase ID Timeline',
+        },
 
-    var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-    google.visualization.events.addListener(chart, 'select', selectHandler);
-    chart.draw(data, options);
+        yAxis: {
+            allowDecimals: false,
+            title: {
+                text: 'Phase ID',
+                style: {fontSize: "25px"},
+            },
+        },
+
+        chart: {
+            height: '400px',
+        },
+
+        scrollbar: {
+            liveRedraw: false
+        },
+
+        series: [{
+            name: 'Phase ID',
+            data: data,
+            marker: {
+                enabled: null, // auto
+                radius: 3,
+                lineWidth: 1,
+            },
+            tooltip: {
+                valueDecimals: 0
+            },
+            linecap:"round",
+            point:{
+                events: {
+                    select: function (event) {
+                        console.log(event.target["y"])
+                        var selectedItem = event.target["y"];
+                        if (selectedItem) {
+                            loadProfResult(selectedItem);
+                            loadCode(selectedItem);
+                            loadTreemap(selectedItem);
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+            },
+            allowPointSelect: true,
+            showCheckbox: false,
+            selected: false,
+            dataGrouping: { enabled: false },
+        }]
+    });
+}
+
+function draw_high_tree(data) {
+    Highcharts.chart('container_tree', {
+        series: [{
+            type: 'treemap',
+            layoutAlgorithm: 'squarified',
+            allowDrillToNode: true,
+            animationLimit: 500,
+            dataLabels: {
+                enabled: false
+            },
+            levelIsConstant: false,
+            levels: [{
+                level: 1,
+                dataLabels: {
+                    enabled: true,
+                    style: {fontSize: "15px"}
+                },
+                borderWidth: 3
+            }],
+            data: data
+        }],
+        subtitle: {
+            text: ''
+        },
+        title: {
+            text: 'Phase Tree Map of Execution Times'
+        },
+        colorAxis: {
+            minColor: '#FFFFFF',
+            maxColor: Highcharts.getOptions().colors[0]
+        },
+    });
 }
 
 function main_fun()
 {
-    loadPhaseHistory();
+    draw_high_tree([{name: "No phase is selected", id: "id_0", value: 1}]);
+    loadPhaseHistory(90);
 }
 
