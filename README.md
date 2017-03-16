@@ -22,3 +22,9 @@ You must compile the binary on your machine in order to make code mapping work.
 cd ./public && python3 -m http.server
 ```
 
+# Development Mode of source code
+```
+npm install
+npm run dev
+```
+

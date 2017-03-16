@@ -1,15 +1,5 @@
-#chart_div {
-    height: 350px;
-}
-
-.pure-u-5-12 {
-    margin-right: 40px;
-}
-
 pre {
     font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+    height: 700px;
 }
 
-pre code {
-    height:600px;
-}
