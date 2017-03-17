@@ -51,6 +51,10 @@ const default_options = {
         text: 'Phase ID Timeline',
     },
 
+    xAxis: {
+        ordinal: false,
+    },
+
     yAxis: {
         allowDecimals: false,
         title: {
