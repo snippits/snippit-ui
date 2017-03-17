@@ -3,11 +3,9 @@ import React from "react";
 export default class SimilaritySlider extends React.Component {
     constructor() {
         super();
-        this.similarity_threshold = 90;
     }
 
     handleChange(e) {
-        this.similarity_threshold = e.target.value;
         this.props.set_change(e.target.value);
     }
 

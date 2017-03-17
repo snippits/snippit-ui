@@ -72,40 +72,13 @@ export default class PhaseTreeMap extends React.Component {
         };
     }
 
-    loadPhaseTreemap(phase_id, cb) {
-        setTimeout(function() {
-            // Don't send request if this request is out-dated
-            if (this.phase_id == phase_id) {
-                var xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                        cb(JSON.parse(this.responseText));
-                    }
-                    else {
-                        cb([{name: "Profiling result not found", id: "id_0", value: 1}]);
-                    }
-                };
-                var link = "output/phase-treemap-" + phase_id;
-                xhttp.open("GET", link + "?_=" + new Date().getTime(), true);
-                xhttp.send();
-            }
-        }.bind(this), 30);
-    }
-
-    loadTreemap(phase_id) {
-        this.loadPhaseTreemap(phase_id, function(data) {
-            let chart = this.refs.chart.getChart();
-            chart.series[0].setData(data);
-        }.bind(this));
-    }
-
     // When the DOM is ready, create the chart.
-    componentDidMount() {
+    componentWillMount() {
         this.config = JSON.parse(JSON.stringify(default_options));
         // Push a new series of our default config with deep copy
         var new_series = JSON.parse(JSON.stringify(default_series));
         // Assign data to the first series
-        new_series.data = [{name: "Profiling result not found", id: "id_0", value: 1}];
+        new_series.data = [{name: "No Phase ID specified", id: "id_0", value: 1}];
         this.forceUpdate();
 
         this.config.series.push(new_series);
@@ -113,19 +86,16 @@ export default class PhaseTreeMap extends React.Component {
 
     render() {
         const { treemap } = this.props;
-        this.phase_id = this.props.selected_phase_id;
-        if (this.props.selected_phase_id != this.last_selected_phase_id) {
-            this.props.dispatch(fetchTreemap(this.phase_id));
-            // this.loadTreemap(this.props.selected_phase_id);
-            this.last_selected_phase_id = this.phase_id;
-        }
+        console.log("PhaseTreeMap");
 
-        if (treemap.fetched) {
+        if (treemap.error) {
+            let chart = this.refs.chart.getChart();
+            chart.series[0].setData([{name: "Profiling Result Not Found", id: "id_0", value: 1}]);
+        } else if (treemap.fetched) {
             let chart = this.refs.chart.getChart();
             chart.series[0].setData(treemap.data);
         }
 
-        // Always render when parent state changes
         return (
             <div class="col-md-12">
                 <ReactHighcharts config={this.config} isPureConfig={treemap.fetching} ref="chart"></ReactHighcharts>

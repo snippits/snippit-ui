@@ -1,3 +1,34 @@
+function phaseReducerHelper(action, obj) {
+    var type_array = action.type.split("_");
+
+    if (type_array.length == 2) {
+        type_array.push("");
+    }
+    switch (type_array[2]) {
+        case "": {
+            obj.fetching = true;
+            obj.fetched = false;
+            break;
+        }
+        case "REJECTED": {
+            obj.fetching = false;
+            obj.fetched = true;
+            obj.error = action.payload;
+            obj.data = null;
+            break;
+        }
+        case "FULFILLED": {
+            obj.fetching = false;
+            obj.fetched = true;
+            obj.error = null;
+            obj.data = action.payload;
+            break;
+        }
+    }
+
+    return obj;
+}
+
 export default function reducer(state={
     phase: {
         id: null,
@@ -22,95 +53,42 @@ export default function reducer(state={
         error: null,
     },
     prof: {
-        data: [],
+        data: {},
         fetching: false,
         fetched: false,
         error: null,
     },
 }, action) {
+    var type_array = action.type.split("_");
 
+    // Find phase related fetch requests first
+    if (type_array.length >= 2 && type_array[0] === "FETCH") {
+        switch (type_array[1]) {
+            case "TIMELINE": {
+                return {...state, timeline: phaseReducerHelper(action, {...state.timeline})};
+            }
+            case "TREEMAP": {
+                return {...state, treemap: phaseReducerHelper(action, {...state.treemap})};
+            }
+            case "CODE": {
+                return {...state, code: phaseReducerHelper(action, {...state.code})};
+            }
+            case "PROF": {
+                return {...state, prof: phaseReducerHelper(action, {...state.prof})};
+            }
+        }
+    }
+
+    // Do other requests
     switch (action.type) {
-        case "FETCH_TIMELINE": {
-            return {...state,
-                timeline: {...state.timeline, fetching: true, fetched:false, similarity_threshold: parseInt(action.payload)}}
-        }
-        case "FETCH_TIMELINE_REJECTED": {
-            return {...state,
-                timeline: {...state.timeline, fetching: false, fetched:true, error: action.payload}}
-        }
-        case "FETCH_TIMELINE_FULFILLED": {
-            return {
-                ...state,
-                timeline: {...state.timeline,
-                    fetching: false,
-                    fetched: true,
-                    data: action.payload,
-                    error: null,
-                },
-            }
-        }
-        case "FETCH_TREEMAP": {
-            return {...state,
-                treemap: {...state.treemap, fetching: true, fetched:false}}
-        }
-        case "FETCH_TREEMAP_REJECTED": {
-            return {...state,
-                treemap: {...state.treemap, fetching: false, error: action.payload}}
-        }
-        case "FETCH_TREEMAP_FULFILLED": {
-            return {
-                ...state,
-                treemap: {...state.treemap,
-                    fetching: false,
-                    fetched: true,
-                    data: action.payload,
-                    error: null,
-                },
-            }
-        }
-        case "FETCH_CODE": {
-            return {...state,
-                code: {...state.code, fetching: true, fetched:false}}
-        }
-        case "FETCH_CODE_REJECTED": {
-            return {...state,
-                code: {...state.code, fetching: false, error: action.payload}}
-        }
-        case "FETCH_CODE_FULFILLED": {
-            return {
-                ...state,
-                code: {...state.code,
-                    fetching: false,
-                    fetched: true,
-                    data: action.payload,
-                    error: null,
-                },
-            }
-        }
-        case "FETCH_PROF": {
-            return {...state,
-                prof: {...state.prof, fetching: true, fetched:false}}
-        }
-        case "FETCH_PROF_REJECTED": {
-            return {...state,
-                prof: {...state.prof, fetching: false, error: action.payload}}
-        }
-        case "FETCH_PROF_FULFILLED": {
-            return {
-                ...state,
-                prof: {...state.prof,
-                    fetching: false,
-                    fetched: true,
-                    data: action.payload,
-                    error: null,
-                },
-            }
-        }
         case "SET_SELECTED_PHASE_ID": {
             return {
                 ...state,
                 phase: {...state.phase, id: action.payload},
             }
+        }
+        case "SET_SIMILARITY_THRESHOLD": {
+            return {...state, timeline: {...state.timeline, similarity_threshold: parseInt(action.payload)}}
         }
     }
 

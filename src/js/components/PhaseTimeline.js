@@ -5,7 +5,7 @@ import Highcharts from "highcharts";
 import ReactHighstock from 'react-highcharts/ReactHighstock'
 import SimilaritySlider from '../components/SimilaritySlider'
 
-import { fetchTimeline } from "../actions/phaseActions.js"
+import { fetchTimeline, setSimilarityThreshold, setSelectedPhase } from "../actions/phaseActions.js"
 
 // Related articles
 // http://www.highcharts.com/blog/post/192-use-highcharts-to-create-charts-in-react/
@@ -101,39 +101,12 @@ export default class PhaseTimeline extends React.Component {
         super()
 
         this.config = {};
-        this.last_similarity_threshold = 90;
         this.state = {
-            similarity_threshold: 90,
         };
     }
 
-    loadPhaseHistory(similarity_threshold, cb) {
-        setTimeout(function() {
-            // Don't send request if this request is out-dated
-            if (this.state.similarity_threshold == similarity_threshold) {
-                var xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                        cb(JSON.parse(this.responseText));
-                    }
-                };
-                similarity_threshold = parseInt(similarity_threshold / 10)
-                var link = "output/phase-history-" + similarity_threshold;
-                xhttp.open("GET", link + ".json?_=" + new Date().getTime(), true);
-                xhttp.send();
-            }
-        }.bind(this), 30);
-    }
-
-    loadHistory(similarity_threshold) {
-        this.loadPhaseHistory(similarity_threshold, function(data) {
-            let chart = this.refs.chart.getChart();
-            chart.series[0].setData(data);
-        }.bind(this));
-    }
-
     // When the DOM is ready, create the chart.
-    componentDidMount() {
+    componentWillMount() {
         this.config = JSON.parse(JSON.stringify(default_options));
 
         // Push a new series of our default config with deep copy
@@ -143,38 +116,51 @@ export default class PhaseTimeline extends React.Component {
         // Assign data to the first series
         new_series.data = [];
         // Assign mouse event to the first series
-        new_series.point.events.select = this.props.select_event;
-
+        new_series.point.events.select = this.select_event.bind(this);
+        // Assign inital value of data series
         this.config.series.push(new_series);
-        this.forceUpdate();
 
-        this.props.dispatch(fetchTimeline(this.state.similarity_threshold));
+        // Set initial value if it's not assigned
+        var similarity_threshold = this.props.similarity_threshold;
+        if (similarity_threshold === undefined) similarity_threshold = 100;
+        this.props.dispatch(setSimilarityThreshold(similarity_threshold));
+        this.props.dispatch(fetchTimeline(similarity_threshold));
+    }
 
-        // this.loadHistory(this.state.similarity_threshold);
+    select_event(event) {
+        var selectedItem = event.target["y"];
+        // console.log(selectedItem)
+        if (selectedItem !== undefined) {
+            this.props.dispatch(setSelectedPhase(selectedItem));
+            return true;
+        }
+        return false;
     }
 
     handle_slider_change(value) {
-        if (this.last_similarity_threshold != value) {
-            this.props.dispatch(fetchTimeline(value));
-            // this.loadHistory(value);
-        }
-        this.last_similarity_threshold = value;
-        this.setState({similarity_threshold: value});
+        this.props.dispatch(setSimilarityThreshold(value));
+        this.props.dispatch(fetchTimeline(value));
     }
 
     render() {
-        console.log("timeline");
+        console.log("PhaseTimeline");
         const { timeline } = this.props;
 
-        if (timeline.fetched && 
-            this.state.similarity_threshold == timeline.similarity_threshold) {
+        if (timeline.error) {
+            let chart = this.refs.chart.getChart();
+            chart.showLoading('Timeline Result Not Found');
+        } else if (timeline.fetching) {
+            let chart = this.refs.chart.getChart();
+            chart.showLoading('Loading data from server...');
+        } else if (timeline.fetched) {
             let chart = this.refs.chart.getChart();
             chart.series[0].setData(timeline.data);
+            chart.hideLoading();
         }
 
         return (
             <div class="col-md-12">
-                <SimilaritySlider set_change={this.handle_slider_change.bind(this)} similarity_threshold={this.state.similarity_threshold} />
+                <SimilaritySlider set_change={this.handle_slider_change.bind(this)} similarity_threshold={timeline.similarity_threshold} />
                 <ReactHighstock config={this.config} isPureConfig={true} ref="chart"></ReactHighstock>
             </div>
         );
