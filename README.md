@@ -28,3 +28,10 @@ npm install
 npm run dev
 ```
 
+# Python Async Server (on-going)
+Install all the dependencies
+```
+pip3 install aiohttp cchardet aiodns
+```
+Run it by `./script/server.py`
+
