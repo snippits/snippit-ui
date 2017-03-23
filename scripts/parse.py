@@ -7,6 +7,10 @@ import glob
 import json
 import collections
 import copy
+import re
+from argparse import ArgumentParser
+from argparse import RawDescriptionHelpFormatter
+import textwrap
 
 output_path = os.path.join(os.path.dirname(__file__), '..', 'public', 'output')
 
@@ -67,8 +71,30 @@ def add_node_to_treemap(treemap, relative_path, counter):
     return treemap
 
 def parse_treemap(json_code_list):
-    # id_map = get_unique_id_mapping(json_code_list)
-    prefix = os.path.commonprefix(list(json_code_list))
+    list_json_code_list = list(json_code_list)
+    lib_prefix = []
+    lib_white_list = ['(.*\/target\/arm-linux-gnueabi[-\w]*\/)', # ex: /target/arm-linux-gnueabihf/
+                      '(.*\/linaro-arm-linux-gnueabi[-\w]*\/)',  # ex: /linaro-arm-linux-gnueabihf/
+                      '(.*\/)libstdc\+\+.\w+\d\/include\/',      # ex: libstdc++/4.9.3/include/
+                      '(.*\/)libstdc\+\+.\w+\d\/src\/',          # ex: libstdc++/4.9.3/src/
+                      '(.*\/)libstdc\+\+.\w+\d\/lib',            # ex: libstdc++/4.9.3/lib/
+                      '(.*\/)include\/c\+\+\/[\d\.]+\/'          # ex: include/c++/4.9.3/
+                      ]
+    for path in list_json_code_list:
+        for w in lib_white_list:
+            m = re.search(w, path)
+            if (m): lib_prefix.append(m.group(0))
+    lib_prefix = list(set(lib_prefix))
+
+    dir_list = []
+    for path in list_json_code_list:
+        c = [lp for lp in lib_prefix if path.startswith(lp)]
+        if (len(c) > 0): continue
+        dir_list.append(os.path.split(path)[0] + "/")
+    prefix = os.path.commonprefix(dir_list)
+    # print("Library prefix: {}".format(lib_prefix))
+    # print("Common prefix: {}".format(prefix))
+
     sorted_list = collections.OrderedDict(sorted(json_code_list.items()))
     treemap = collections.OrderedDict()
     # NOTE This is needed if root node wanted to be shown
@@ -78,19 +104,20 @@ def parse_treemap(json_code_list):
         # k = "./" + os.path.relpath(k, prefix)
 
         # NOTE: Faster version of removing prefix.
-        # P.S. /A/B/C/../../../ would be ../../../
-        k = k[len(prefix):]
-        # Check if it is in "./" format
-        if (k[0] != "."): k = "./" + k
-
+        # P.S. /A/B/C/../../../ would be ./../../../
+        k = k.replace(prefix, './')
+        # Replace standard library headers and srouces into another sub-folder
+        for p in lib_prefix:
+            k = k.replace(p, './Standard Lib/')
         # NOTE for linux kernel only, replace the include folder
-        k = k.replace("/include/", "/")
-        k = k.replace("/arch/arm/", "/arch_arm/")
-        k = k.replace("/arch/arm64/", "/arch_arm64/")
-        k = k.replace("/arch/x86/", "/arch_x86/")
+        if (prefix.find("/linux/")):
+            k = k.replace("/include/", "/")
+            k = k.replace("/arch/arm/", "/arch_arm/")
+            k = k.replace("/arch/arm64/", "/arch_arm64/")
+            k = k.replace("/arch/x86/", "/arch_x86/")
         p, l = k.split(":")
         treemap = add_node_to_treemap(treemap, p, int(v))
-        # print f, l, v
+        # print(p, l, v)
     # print(treemap)
     # print(sorted_list)
     output_json = list(treemap.values())
@@ -118,7 +145,13 @@ def parse_codes(data):
         fname=key.split(':')[0]
         line=int(key.split(':')[1])
         if fname in file_content_map:
-            file_content_map[fname][line] = append_count_to_code(file_content_map[fname][line], value)
+            while(True):
+                try:
+                    file_content_map[fname][line] = append_count_to_code(file_content_map[fname][line], value)
+                    break
+                except IndexError:
+                    # TODO Find out why and solve it properly
+                    line -= 1
         else:
             try:
                 if (os.path.isfile(fname)):
@@ -150,16 +183,44 @@ def read_phase_timeline(path):
     except FileNotFoundError:
         timestamp = range(len(order))
 
+    # Find maximum phase id
     maximum_phase_id = max(order)
+    # Rephrase the value of special number
+    for i in range(len(order)):
+        if (order[i] == -1): # Means a null point
+             order[i] = None
     # Zip two list together and output in this form [[int, int], ...]
     phases = zip(timestamp, order)
     phases = [ [kv[0],kv[1]] for kv in phases ]
     return phases, maximum_phase_id
 
-def parse_phase_files(path, output_path, parse_code_flag):
+
+def legacy_get_execution_time(prof_message_str):
+    hit_flag = False
+    return (float(prof_message_str.split(":")[-1].split(" ")[1]))
+
+def parse_prof_text(prof_string):
+    prof_string = prof_string.replace(",", "")
+    prof_string = prof_string.replace("(", "")
+    prof_string = prof_string.replace(")", "")
+    prof_string = prof_string.replace("|", "")
+    output = []
+    for line in prof_string.split():
+        try:
+            if (line == "NaN" or line == "nan" or line == "Nan"):
+                output.append(0.0)
+                continue
+            output.append(float(line))
+        except ValueError:
+            pass
+    return output
+
+def parse_phase_files(path, output_path, parse_code_flag, walk_times_filter):
     files = glob.glob(os.path.join(path, 'phase-*'))
 
     code_files_array = []
+    exe_time_array = []
+    perf_cnt_array = []
     for f in sorted(files):
         print('Parsing ' + f + '/' + str(len(files) - 1), end='\r')
         sys.stdout.flush()
@@ -170,18 +231,21 @@ def parse_phase_files(path, output_path, parse_code_flag):
         json_code_list = ret['code']
         # Get the profiling information
         prof_message = ret['prof']
+        perf_cnt_array.append(parse_prof_text(prof_message["text"]))
         prof_message_str = json.dumps(prof_message)
+        exe_time = legacy_get_execution_time(prof_message_str)
+        exe_time_array.append(exe_time)
         # Parse code-map to code or just output the json array after sorting by key/value
         if (parse_code_flag):
             code_str = parse_codes(json_code_list)
         else:
-            code_str = sort_by_value_str(json_code_list)
-            # code_str = sort_by_key_str(json_code_list)
+            # code_str = sort_by_value_str(json_code_list)
+            code_str = sort_by_key_str(json_code_list)
         # Paese the code-map to a tree-map format
         treemap_str = parse_treemap(json_code_list)
 
         # Append to the files array and filter out files with only a few times of execution
-        code_files_array.append(dict((k, v) for k, v in json_code_list.items() if v >= 10))
+        code_files_array.append(dict((k, v) for k, v in json_code_list.items() if v >= walk_times_filter))
         # Output all the corresponding files generated by this phase
         out_fname = os.path.join(output_path, 'phase-prof-' + str(number))
         write_to_file(out_fname, prof_message_str)
@@ -189,17 +253,21 @@ def parse_phase_files(path, output_path, parse_code_flag):
         write_to_file(out_fname, code_str)
         out_fname = os.path.join(output_path, 'phase-treemap-' + str(number))
         write_to_file(out_fname, treemap_str)
-    return code_files_array
+
+    out_fname = os.path.join(output_path, 'phase-exec-time-histogram')
+    write_to_file(out_fname, json.dumps(sorted(exe_time_array)))
+    return code_files_array, perf_cnt_array, exe_time_array
 
 def compare_two_code_similarity(code_ahead, code_follow):
-    cnt_total = len(code_follow)
+    cnt_total = len(code_ahead) + len(code_follow)
+    if (cnt_total == 0): return 0
     cnt_same = 0
     for key in code_follow:
         if key in code_ahead:
             cnt_same += 1
-    return cnt_same / float(cnt_total)
+    return cnt_same * 2 / float(cnt_total)
 
-def collect_phase_code_range(path, max_phase_id, code_files_array):
+def collect_phase_code_range(path, max_phase_id, code_files_array, fine_grained_flag):
     code_refer_array = []
     for i in range(10):
         code_refer_array.append(list(range(max_phase_id + 1)))
@@ -213,7 +281,11 @@ def collect_phase_code_range(path, max_phase_id, code_files_array):
             similarity = compare_two_code_similarity(code_files_array[j], code_files_array[i])
             similarity_mat[i][j] = similarity
 
-    for kv in zip(range(10), [0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9, 1.0]):
+    if (fine_grained_flag):
+        sim_vec = [0.91,  0.92,  0.93,  0.94,  0.95,  0.96,  0.97,  0.98,  0.99, 1.0]
+    else:
+        sim_vec = [0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9, 1.0]
+    for kv in zip(range(10), sim_vec):
         threshold = kv[1]
         idx = kv[0]
         for i in range(max_phase_id + 1):
@@ -228,68 +300,193 @@ def collect_phase_code_range(path, max_phase_id, code_files_array):
 def update_phase_id(phase_list, code_refer_array):
     pl = copy.deepcopy(phase_list)
     for kv in pl:
-        kv[1] = code_refer_array[kv[1]]
+        if (kv[1] != None):
+            kv[1] = code_refer_array[kv[1]]
     return pl
+
+def reduce_phase_timeline(phase_list):
+    last_id = -1
+    last_time = -1
+    output_list = []
+    for p in phase_list:
+        if (p[1] != last_id or p[0] - last_time > 100):
+            output_list.append(p)
+            last_time = p[0]
+        last_id = p[1]
+    return output_list
+
+def filter_phase_timeline(phase_list, exe_time_array, value):
+    output_list = []
+    for p in phase_list:
+        if (exe_time_array[p[1]] >= value):
+            output_list.append(p)
+        else:
+            output_list.append([p[0], None])
+    return output_list
 
 def output_phase_timeline(path, idx, phase_list):
     with open(os.path.join(path, 'phase-history-' + str(idx) + '.json'), "w") as out_file:
         json.dump(phase_list, out_file)
 
-def print_usage():
-    print('Usage: parse.py -i <PHASE DIRECTORY>/<PID> [-o <OUTPUT DIRECTORY>] [-c]')
-    print('    Ex: parse.py -i /tmp/snippit/phase/740')
-    print('\nOptions:')
-    print('    -i:      Input Directory')
-    print('    -o:      Output Directory')
-    print('    -c:      Parse source codes and output with line# in plain text files')
+def output_phase_files(path, output_path, prof_cnt_array, code_list_array):
+    files = glob.glob(os.path.join(path, 'phase-*'))
+
+    for f in sorted(files):
+        number = int(f.split('-')[1])
+        prof_cnt = prof_cnt_array[number]
+        # Get the profiling information
+        text_prof = \
+"==== Program Profile ====\n"\
+"\n"\
+"   === QEMU/ARM ===\n"\
+"Instructions:\n"\
+" Total instruction count       : {:,d}\n"\
+"  ->User mode insn count       : {:,d}\n"\
+"  ->Supervisor mode insn count : {:,d}\n"\
+"  ->IRQ mode insn count        : {:,d}\n"\
+"  ->Other mode insn count      : {:,d}\n"\
+" Total load instruction count  : {:,d}\n"\
+"  ->User mode load count       : {:,d}\n"\
+"  ->Supervisor mode load count : {:,d}\n"\
+"  ->IRQ mode load count        : {:,d}\n"\
+"  ->Other mode load count      : {:,d}\n"\
+" Total store instruction count : {:,d}\n"\
+"  ->User mode store count      : {:,d}\n"\
+"  ->Supervisor mode store count: {:,d}\n"\
+"  ->IRQ mode store count       : {:,d}\n"\
+"  ->Other mode store count     : {:,d}\n"\
+"Branch:\n"\
+"    -> predict accuracy    : ({:.2f})\n"\
+"    -> correct prediction  : ({:,d})\n"\
+"    -> wrong prediction    : ({:,d})\n"\
+"CACHE:\n"\
+"       (Miss Rate)   |    Access Count    |   Read Miss Count  |  Write Miss Count  |\n"\
+"    -> memory ({:.2f}) |{:=20,d}|{:=20,d}|{:=20,d}|\n"\
+"    -> L1-I   ({:.2f}) |{:=20,d}|{:=20,d}|{:=20,d}|\n"\
+"    -> L1-D   ({:.2f}) |{:=20,d}|{:=20,d}|{:=20,d}|\n"\
+"    -> L2-D   ({:.2f}) |{:=20,d}|{:=20,d}|{:=20,d}|\n"\
+"\n"\
+"Timing Info:\n"\
+"  ->CPU                        : {:f} sec\n"\
+"  ->Branch                     : {:f} sec\n"\
+"  ->Cache                      : {:f} sec\n"\
+"  ->System memory              : {:f} sec\n"\
+"  ->I/O memory                 : {:f} sec\n"\
+"Estimated execution time       : {:f} sec\n".format(
+        prof_cnt[0],prof_cnt[1],prof_cnt[2],prof_cnt[3],prof_cnt[4],prof_cnt[5],prof_cnt[6],prof_cnt[7],prof_cnt[8],prof_cnt[9],prof_cnt[10],prof_cnt[11],prof_cnt[12],prof_cnt[13],prof_cnt[14],prof_cnt[15],prof_cnt[16],prof_cnt[17],prof_cnt[18],prof_cnt[19],prof_cnt[20],prof_cnt[21],prof_cnt[22],prof_cnt[23],prof_cnt[24],prof_cnt[25],prof_cnt[26],prof_cnt[27],prof_cnt[28],prof_cnt[29],prof_cnt[30],prof_cnt[31],prof_cnt[32],prof_cnt[33],prof_cnt[34],prof_cnt[35],prof_cnt[36],prof_cnt[37],prof_cnt[38],prof_cnt[39]
+)
+
+        prof_message = {"text": text_prof}
+        prof_message_str = json.dumps(prof_message)
+        code_str = sort_by_key_str(code_list_array[number])
+
+        # Paese the code-map to a tree-map format
+        treemap_str = parse_treemap(code_list_array[number])
+
+        out_fname = os.path.join(output_path, 'phase-prof-' + str(number))
+        write_to_file(out_fname, prof_message_str)
+        out_fname = os.path.join(output_path, 'phase-code-' + str(number))
+        write_to_file(out_fname, code_str)
+        out_fname = os.path.join(output_path, 'phase-treemap-' + str(number))
+        write_to_file(out_fname, treemap_str)
+
+def merge_phases(perf_cnt_array, code_list_array, code_refer_array, selected_similarity):
+    # Accumulate the counters of phases
+    for i in range(len(perf_cnt_array)):
+        for j in range(len(perf_cnt_array[i])):
+            if (j not in [15, 18, 22, 26, 30, 34, 35, 36, 37, 38, 39]):
+                perf_cnt_array[i][j] = int(perf_cnt_array[i][j])
+
+    for i in range(len(perf_cnt_array)):
+        to_num = code_refer_array[selected_similarity - 1][i]
+        if (to_num == i): continue;
+        for k in code_list_array[i].keys():
+            try:
+                code_list_array[to_num][k] += code_list_array[i][k]
+            except KeyError:
+                code_list_array[to_num][k] = code_list_array[i][k]
+        _tmp = [x + y for x, y in zip(perf_cnt_array[to_num], perf_cnt_array[i])]
+        perf_cnt_array[to_num] = _tmp
+        for j in [15, 18, 22, 26, 30]:
+            perf_cnt_array[to_num][j] /= 2.0
+
+def get_descriptions():
+    return textwrap.dedent('''\
+    A parser for snippits UI web interface.
+    ''')
+
+def get_sample_usage():
+    return textwrap.dedent('''\
+    Sample Usage:
+            Ex: parse.py -i /tmp/snippit/phase/740
+        Parse code lines into texts
+            Ex: parse.py -i /tmp/snippit/phase/740 -c
+        Only Timeline changes
+            Ex: parse.py -i /tmp/snippit/phase/740 -f
+        Merge the results with teh same similarity index 9
+            Ex: parse.py -i /tmp/snippit/phase/740 -f -m 9
+    ''')
 
 def main(argv):
     global output_path
-    input_path = ''
-    parse_code_flag = False
 
-    try:
-        opts, args = getopt.getopt(argv,"hi:oc:")
-    except getopt.GetoptError:
-        print_usage()
-        sys.exit(2)
-    for opt, arg in opts:
-       if opt == '-h':
-           print_usage()
-           sys.exit()
-       elif opt in ("-i"):
-           input_path = arg
-       elif opt in ("-o"):
-           output_path = arg
-       elif opt in ("-c"):
-           parse_code_flag = True
+    ap = ArgumentParser('parse.py',
+            formatter_class=RawDescriptionHelpFormatter,
+            description=get_descriptions(),
+            epilog=get_sample_usage())
+    ap.add_argument('--input', '-i', help='Input Directory', type=str)
+    ap.add_argument('--output', '-o', help='Output Directory', type=str)
+    ap.add_argument('--code_parser', '-c', help='Parse the codes', action='store_true')
+    ap.add_argument('--fine_grained', '-f', help='Use similarity 0.9-0.99', action='store_true')
+    ap.add_argument('--time_filter', '-t', help='Filter out phases shorter than # secs', type=float)
+    ap.add_argument('--merge_similarity', '-m', help='# of index of similarity to be merged', type=int)
+    ap.add_argument('--walk_times_filter', '-w',
+            help='Filter out lines which contains less than # times. Default=10', type=int, default=10)
+    args = ap.parse_args()
 
-    if (len(opts) == 0):
-        print_usage()
-        sys.exit(0)
+    input_path = args.input
+    if (args.output != None):
+        output_path = args.output
 
-    if (os.path.isdir(input_path)):
-        print('Input path is  ' + input_path)
-        print('Output file is ' + output_path)
-
-        phase_timeline,num_phases = read_phase_timeline(input_path)
-        print('# Phases: {}'.format(num_phases))
-        print('# Windows: {}'.format(len(phase_timeline)))
-
-        phase_code_range = parse_phase_files(input_path, output_path, parse_code_flag)
-        print('\nParse Finished')
-
-        print('Calculating similarity of phases... (It might take some time)')
-        code_refer_array = collect_phase_code_range(input_path, num_phases, phase_code_range)
-        # print('Remap phase IDs as follows:')
-        # print(code_refer_array)
-        print('Output timeline')
-        for idx in range(len(code_refer_array)):
-            pl = update_phase_id(phase_timeline, code_refer_array[idx])
-            output_phase_timeline(output_path, idx + 1, pl)
-    else:
+    if (not os.path.isdir(input_path)):
         print("Input path is not a directory")
         sys.exit(2)
+
+    print('Input path is  ' + input_path)
+    print('Output file is ' + output_path)
+
+    phase_timeline,num_phases = read_phase_timeline(input_path)
+    print('# Phases: {}'.format(num_phases))
+    print('# Windows: {}'.format(len(phase_timeline)))
+
+    phase_code_range, perf_cnt_array, exe_time_array = parse_phase_files(input_path, output_path, args.code_parser, args.walk_times_filter)
+    print('\nParse Finished')
+
+    print('Calculating similarity of phases... (It might take some time)')
+    code_refer_array = collect_phase_code_range(input_path, num_phases, phase_code_range, args.fine_grained)
+    # print('Remap phase IDs as follows:')
+    # print(code_refer_array)
+    out_fname = os.path.join(output_path, 'phase-similarity')
+    write_to_file(out_fname, json.dumps(code_refer_array))
+    if (args.merge_similarity):
+        print('Selected similarity is {}'.format(args.merge_similarity))
+        merge_phases(perf_cnt_array, phase_code_range, code_refer_array, args.merge_similarity)
+        # Output the counters
+        output_phase_files(input_path, output_path, perf_cnt_array, phase_code_range)
+
+    reduced_len = 0
+    for idx in range(len(code_refer_array)):
+        pl = update_phase_id(phase_timeline, code_refer_array[idx])
+        # Reduce timeline if # windows exceeds 10,000
+        # NOTE This would be replaced by scaling in the future
+        if (len(pl) > 10000):
+            pl = reduce_phase_timeline(pl)
+        # Watch only the phase longer than # of seconds
+        if (args.time_filter):
+            pl = filter_phase_timeline(pl, exe_time_array, args.time_filter)
+        reduced_len = len(pl)
+        output_phase_timeline(output_path, idx + 1, pl)
+    print('Output timeline with # windows: {}'.format(reduced_len))
 
 if __name__ == "__main__":
     main(sys.argv[1:])

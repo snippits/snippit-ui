@@ -26,7 +26,11 @@ export default class CodeResult extends React.Component {
         if (code.error) {
             output = [];
         } else if (code.fetched) {
-            output = JSON.stringify(code.data, null, 4)
+            if (typeof code.data === "string") {
+                output = code.data
+            } else {
+                output = JSON.stringify(code.data, null, 4)
+            }
         }
 
         return (
