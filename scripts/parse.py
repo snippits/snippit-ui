@@ -137,11 +137,11 @@ def append_count_to_code(code, value):
     return "{:8}{}".format(str(value), code)
 
 def parse_codes(data):
-    output_str=""
+    output_str = ""
     file_content_map = {}
     for key, value in data.items():
-        fname=key.split(':')[0]
-        line=int(key.split(':')[1])
+        fname = key.split(':')[0]
+        line = int(key.split(':')[1])
         if fname in file_content_map:
             while(True):
                 try:
