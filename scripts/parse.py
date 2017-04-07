@@ -177,7 +177,8 @@ def read_phase_timeline(path):
         with open(os.path.join(path, 'phase_timestamp')) as fp:
             raw_timestamp = fp.readline()
         # Parse to int and translate into miliseconds
-        timestamp = [(int(x) / 1000) for x in raw_timestamp.split(',')]
+        # x is in string type
+        timestamp = [int(int(x) / 1000) for x in raw_timestamp.split(',')]
     except FileNotFoundError:
         timestamp = range(len(order))
 
