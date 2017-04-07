@@ -194,7 +194,7 @@ def read_phase_timeline(path):
 
 
 def legacy_get_execution_time(prof_message_str):
-    hit_flag = False
+    hit_flag = False# DCE
     return (float(prof_message_str.split(":")[-1].split(" ")[1]))
 
 def parse_prof_text(prof_string):
