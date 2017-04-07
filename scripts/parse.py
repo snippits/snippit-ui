@@ -349,45 +349,44 @@ def output_phase_files(path, output_path, prof_cnt_array, code_list_array, parse
         prof_cnt = prof_cnt_array[number]
         # Get the profiling information
         text_prof = \
-"==== Program Profile ====\n"\
-"\n"\
-"   === QEMU/ARM ===\n"\
-"Instructions:\n"\
-" Total instruction count       : {:,d}\n"\
-"  ->User mode insn count       : {:,d}\n"\
-"  ->Supervisor mode insn count : {:,d}\n"\
-"  ->IRQ mode insn count        : {:,d}\n"\
-"  ->Other mode insn count      : {:,d}\n"\
-" Total load instruction count  : {:,d}\n"\
-"  ->User mode load count       : {:,d}\n"\
-"  ->Supervisor mode load count : {:,d}\n"\
-"  ->IRQ mode load count        : {:,d}\n"\
-"  ->Other mode load count      : {:,d}\n"\
-" Total store instruction count : {:,d}\n"\
-"  ->User mode store count      : {:,d}\n"\
-"  ->Supervisor mode store count: {:,d}\n"\
-"  ->IRQ mode store count       : {:,d}\n"\
-"  ->Other mode store count     : {:,d}\n"\
-"Branch:\n"\
-"    -> predict accuracy    : ({:.2f})\n"\
-"    -> correct prediction  : ({:,d})\n"\
-"    -> wrong prediction    : ({:,d})\n"\
-"CACHE:\n"\
-"       (Miss Rate)   |    Access Count    |   Read Miss Count  |  Write Miss Count  |\n"\
-"    -> memory ({:.2f}) |{:=20,d}|{:=20,d}|{:=20,d}|\n"\
-"    -> L1-I   ({:.2f}) |{:=20,d}|{:=20,d}|{:=20,d}|\n"\
-"    -> L1-D   ({:.2f}) |{:=20,d}|{:=20,d}|{:=20,d}|\n"\
-"    -> L2-D   ({:.2f}) |{:=20,d}|{:=20,d}|{:=20,d}|\n"\
-"\n"\
-"Timing Info:\n"\
-"  ->CPU                        : {:f} sec\n"\
-"  ->Branch                     : {:f} sec\n"\
-"  ->Cache                      : {:f} sec\n"\
-"  ->System memory              : {:f} sec\n"\
-"  ->I/O memory                 : {:f} sec\n"\
-"Estimated execution time       : {:f} sec\n".format(
-        prof_cnt[0],prof_cnt[1],prof_cnt[2],prof_cnt[3],prof_cnt[4],prof_cnt[5],prof_cnt[6],prof_cnt[7],prof_cnt[8],prof_cnt[9],prof_cnt[10],prof_cnt[11],prof_cnt[12],prof_cnt[13],prof_cnt[14],prof_cnt[15],prof_cnt[16],prof_cnt[17],prof_cnt[18],prof_cnt[19],prof_cnt[20],prof_cnt[21],prof_cnt[22],prof_cnt[23],prof_cnt[24],prof_cnt[25],prof_cnt[26],prof_cnt[27],prof_cnt[28],prof_cnt[29],prof_cnt[30],prof_cnt[31],prof_cnt[32],prof_cnt[33],prof_cnt[34],prof_cnt[35],prof_cnt[36],prof_cnt[37],prof_cnt[38],prof_cnt[39]
-)
+"""==== Program Profile ====
+
+   === QEMU/ARM ===
+Instructions:
+ Total instruction count       : {:,d}
+  ->User mode insn count       : {:,d}
+  ->Supervisor mode insn count : {:,d}
+  ->IRQ mode insn count        : {:,d}
+  ->Other mode insn count      : {:,d}
+ Total load instruction count  : {:,d}
+  ->User mode load count       : {:,d}
+  ->Supervisor mode load count : {:,d}
+  ->IRQ mode load count        : {:,d}
+  ->Other mode load count      : {:,d}
+ Total store instruction count : {:,d}
+  ->User mode store count      : {:,d}
+  ->Supervisor mode store count: {:,d}
+  ->IRQ mode store count       : {:,d}
+  ->Other mode store count     : {:,d}
+Branch:
+    -> predict accuracy    : ({:.2f})
+    -> correct prediction  : ({:,d})
+    -> wrong prediction    : ({:,d})
+CACHE:
+       (Miss Rate)   |    Access Count    |   Read Miss Count  |  Write Miss Count  |
+    -> memory ({:.3f}) |{:=20,d}|{:=20,d}|{:=20,d}|
+    -> L1-I   ({:.3f}) |{:=20,d}|{:=20,d}|{:=20,d}|
+    -> L1-D   ({:.3f}) |{:=20,d}|{:=20,d}|{:=20,d}|
+    -> L2-D   ({:.3f}) |{:=20,d}|{:=20,d}|{:=20,d}|
+
+Timing Info:
+  ->CPU                        : {:f} sec
+  ->Branch                     : {:f} sec
+  ->Cache                      : {:f} sec
+  ->System memory              : {:f} sec
+  ->I/O memory                 : {:f} sec
+Estimated execution time       : {:f} sec
+""".format(*prof_cnt)
 
         prof_message = {"text": text_prof}
         prof_message_str = json.dumps(prof_message)
