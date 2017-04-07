@@ -213,6 +213,9 @@ def parse_prof_text(prof_string):
             output.append(float(line))
         except ValueError:
             pass
+    # TODO VPMU output miss L2-D when it's all zeros
+    if (len(output) != 40):
+        output = [*output[:30], 0.0, 0, 0, 0, *output[30:]]
     return output
 
 def parse_phase_files(path, output_path, parse_code_flag, walk_times_filter):
@@ -327,8 +330,22 @@ def filter_phase_timeline(phase_list, exe_time_array, value):
 def output_phase_timeline(path, idx, phase_list):
     with open(os.path.join(path, 'phase-history-' + str(idx) + '.json'), "w") as out_file:
         json.dump(phase_list, out_file)
+    # TODO make it shorter
+    out_str = ""
+    # shown_range = range(2800, 3700)
+    shown_range = range(len(phase_list))
+    for i in shown_range:
+        out_str += str(i) + ","
+    out_str += "\n"
+    cnt = 0
+    for kv in phase_list:
+        if (cnt >= shown_range[0] and cnt <= shown_range[-1]):
+            out_str += str(kv[1]) + ","
+        cnt += 1
+    out_str += "\n"
+    write_to_file(os.path.join(path, 'phase-history-' + str(idx) + '.csv'), out_str)
 
-def output_phase_files(path, output_path, prof_cnt_array, code_list_array):
+def output_phase_files(path, output_path, prof_cnt_array, code_list_array, parse_code_flag):
     files = glob.glob(os.path.join(path, 'phase-*'))
 
     for f in sorted(files):
@@ -378,7 +395,12 @@ def output_phase_files(path, output_path, prof_cnt_array, code_list_array):
 
         prof_message = {"text": text_prof}
         prof_message_str = json.dumps(prof_message)
-        code_str = sort_by_key_str(code_list_array[number])
+        json_code_list = code_list_array[number]
+        if (parse_code_flag):
+            code_str = parse_codes(json_code_list)
+        else:
+            # code_str = sort_by_value_str(json_code_list)
+            code_str = sort_by_key_str(json_code_list)
 
         # Paese the code-map to a tree-map format
         treemap_str = parse_treemap(code_list_array[number])
@@ -398,6 +420,8 @@ def merge_phases(perf_cnt_array, code_list_array, code_refer_array, selected_sim
                 perf_cnt_array[i][j] = int(perf_cnt_array[i][j])
 
     for i in range(len(perf_cnt_array)):
+        # TODO Unknown bug. Why doesn't it match?
+        if (i == len(code_refer_array[selected_similarity - 1])): break
         to_num = code_refer_array[selected_similarity - 1][i]
         if (to_num == i): continue;
         for k in code_list_array[i].keys():
@@ -407,8 +431,12 @@ def merge_phases(perf_cnt_array, code_list_array, code_refer_array, selected_sim
                 code_list_array[to_num][k] = code_list_array[i][k]
         _tmp = [x + y for x, y in zip(perf_cnt_array[to_num], perf_cnt_array[i])]
         perf_cnt_array[to_num] = _tmp
-        for j in [15, 18, 22, 26, 30]:
-            perf_cnt_array[to_num][j] /= 2.0
+        # TODO Divide by zero problem
+        perf_cnt_array[to_num][15] = perf_cnt_array[to_num][16] / (perf_cnt_array[to_num][16] + perf_cnt_array[to_num][17] + 1)
+        perf_cnt_array[to_num][18] = 0.0
+        perf_cnt_array[to_num][22] = (perf_cnt_array[to_num][24] + perf_cnt_array[to_num][26]) / (perf_cnt_array[to_num][23] + 1)
+        perf_cnt_array[to_num][26] = (perf_cnt_array[to_num][28] + perf_cnt_array[to_num][29]) / (perf_cnt_array[to_num][27] + 1)
+        perf_cnt_array[to_num][30] = (perf_cnt_array[to_num][32] + perf_cnt_array[to_num][33]) / (perf_cnt_array[to_num][31] + 1)
 
 def get_descriptions():
     return textwrap.dedent('''\
@@ -472,7 +500,7 @@ def main(argv):
         print('Selected similarity is {}'.format(args.merge_similarity))
         merge_phases(perf_cnt_array, phase_code_range, code_refer_array, args.merge_similarity)
         # Output the counters
-        output_phase_files(input_path, output_path, perf_cnt_array, phase_code_range)
+        output_phase_files(input_path, output_path, perf_cnt_array, phase_code_range, args.code_parser)
 
     reduced_len = 0
     for idx in range(len(code_refer_array)):
