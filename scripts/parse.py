@@ -263,11 +263,9 @@ def parse_phase_files(path, output_path, parse_code_flag, walk_times_filter):
 
 def compare_two_code_similarity(code_ahead, code_follow):
     cnt_total = len(code_ahead) + len(code_follow)
-    if (cnt_total == 0): return 0
-    cnt_same = 0
-    for key in code_follow:
-        if key in code_ahead:
-            cnt_same += 1
+    if (cnt_total == 0): return 0.0
+    # Both are unique list, so this would work
+    cnt_same = len(set(code_ahead) & set(code_follow))
     return cnt_same * 2 / float(cnt_total)
 
 def collect_phase_code_range(path, max_phase_id, code_files_array, fine_grained_flag):
