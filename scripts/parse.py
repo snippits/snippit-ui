@@ -206,7 +206,8 @@ def parse_prof_text(prof_string):
     output = []
     for line in prof_string.split():
         try:
-            if (line == "NaN" or line == "nan" or line == "Nan"):
+            # either nan or -nan should be escaped
+            if (line.lower() == "nan" or line.lower() == "-nan"):
                 output.append(0.0)
                 continue
             output.append(float(line))
