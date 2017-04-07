@@ -14,8 +14,8 @@ import textwrap
 output_path = os.path.join(os.path.dirname(__file__), '..', 'public', 'output')
 
 def write_to_file(fname, content):
-    fp = open(fname, "w")
-    fp.write(content)
+    with open(fname, "w") as fp:
+        fp.write(content)
 
 def sort_by_value_str(json_code_list):
     json_code_list = sorted(json_code_list.items(), key=lambda kv: -kv[1])
@@ -127,12 +127,11 @@ def parse_treemap(json_code_list):
     return output_str
 
 def read_source_code_file(fname):
-    if (os.path.isfile(fname)):
-        fp = open(fname)
-        content = fp.readlines()
-        fp.close()
-        return content
-    return ""
+    try:
+        with open(fname) as fp:
+            return fp.readlines()
+    except OSError:
+        return ""
 
 def append_count_to_code(code, value):
     return "{:8}{}".format(str(value), code)
@@ -170,13 +169,13 @@ def parse_codes(data):
     return output_str
 
 def read_phase_timeline(path):
-    fp = open(os.path.join(path, 'phase_history'))
-    raw_order = fp.readline()
+    with open(os.path.join(path, 'phase_history')) as fp:
+        raw_order = fp.readline()
     order = list(map(int, raw_order.split(',')))
 
     try:
-        fp = open(os.path.join(path, 'phase_timestamp'))
-        raw_timestamp = fp.readline()
+        with open(os.path.join(path, 'phase_timestamp')) as fp:
+            raw_timestamp = fp.readline()
         # Parse to int and translate into miliseconds
         timestamp = [(int(x) / 1000) for x in raw_timestamp.split(',')]
     except FileNotFoundError:
