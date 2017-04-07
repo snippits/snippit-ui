@@ -159,9 +159,9 @@ def parse_codes(data):
                 pass
 
     for key in file_content_map:
-        output_str += "==> " + key + " <==\n"
+        output_str += "==> %s <==\n" % key
         for line in file_content_map[key]:
-            if (line[0] >= '0' and line[0] <= '9'):
+            if ('0' <= line[0] <= '9'):
                 output_str += line
             else:
                 # Align the text when it has no line #
@@ -286,9 +286,7 @@ def collect_phase_code_range(path, max_phase_id, code_files_array, fine_grained_
         sim_vec = [0.91,  0.92,  0.93,  0.94,  0.95,  0.96,  0.97,  0.98,  0.99, 1.0]
     else:
         sim_vec = [0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9, 1.0]
-    for kv in zip(range(10), sim_vec):
-        threshold = kv[1]
-        idx = kv[0]
+    for idx, threshold in enumerate(sim_vec):
         for i in range(max_phase_id + 1):
             for j in range(1, i):
                 # Find first hit
@@ -301,7 +299,7 @@ def collect_phase_code_range(path, max_phase_id, code_files_array, fine_grained_
 def update_phase_id(phase_list, code_refer_array):
     pl = copy.deepcopy(phase_list)
     for kv in pl:
-        if (kv[1] != None):
+        if (kv[1] is not None):
             kv[1] = code_refer_array[kv[1]]
     return pl
 
@@ -461,7 +459,7 @@ def main(argv):
             description=get_descriptions(),
             epilog=get_sample_usage())
     ap.add_argument('--input', '-i', help='Input Directory', type=str)
-    ap.add_argument('--output', '-o', help='Output Directory', type=str)
+    ap.add_argument('--output', '-o', help='Output Directory', type=str, default=output_path)
     ap.add_argument('--code_parser', '-c', help='Parse the codes', action='store_true')
     ap.add_argument('--fine_grained', '-f', help='Use similarity 0.9-0.99', action='store_true')
     ap.add_argument('--time_filter', '-t', help='Filter out phases shorter than # secs', type=float)
@@ -470,16 +468,18 @@ def main(argv):
             help='Filter out lines which contains less than # times. Default=10', type=int, default=10)
     args = ap.parse_args()
 
-    input_path = args.input
-    if (args.output != None):
-        output_path = args.output
+    input_path = os.path.abspath(args.input)
+    output_path = os.path.abspath(args.output)
+
+    print('Input path is  : ' + input_path)
+    print('Output file is : ' + output_path)
 
     if (not os.path.isdir(input_path)):
         print("Input path is not a directory")
         sys.exit(2)
-
-    print('Input path is  ' + input_path)
-    print('Output file is ' + output_path)
+    if (not os.path.isdir(output_path)):
+        print("Output path is not a directory")
+        sys.exit(2)
 
     phase_timeline,num_phases = read_phase_timeline(input_path)
     print('# Phases: {}'.format(num_phases))
