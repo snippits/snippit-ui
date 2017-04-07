@@ -315,12 +315,10 @@ def reduce_phase_timeline(phase_list):
     return output_list
 
 def filter_phase_timeline(phase_list, exe_time_array, value):
-    output_list = []
-    for p in phase_list:
-        if (exe_time_array[p[1]] >= value):
-            output_list.append(p)
-        else:
-            output_list.append([p[0], None])
+    output_list = [
+            [window_id, phase_id] if exe_time_array[phase_id] >= value
+            else [window_id, None]
+            for window_id, phase_id in phase_list]
     return output_list
 
 def output_phase_timeline(path, idx, phase_list):
