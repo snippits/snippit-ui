@@ -104,7 +104,8 @@ def parse_treemap(json_code_list):
 
         # NOTE: Faster version of removing prefix.
         # P.S. /A/B/C/../../../ would be ./../../../
-        k = k.replace(prefix, './')
+        if (prefix):
+            k = k.replace(prefix, './')
         # Replace standard library headers and srouces into another sub-folder
         for p in lib_prefix:
             k = k.replace(p, './Standard Lib/')
