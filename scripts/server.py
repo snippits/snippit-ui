@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+# Copyright (c) 2017, Medicine Yeh
+
 from __future__ import unicode_literals, print_function
 from aiohttp import web
 import os

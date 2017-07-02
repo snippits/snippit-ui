@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+# Copyright (c) 2017, Medicine Yeh
+
 import os
 import sys
 import getopt
