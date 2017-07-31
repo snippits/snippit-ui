@@ -117,7 +117,12 @@ def parse_treemap(json_code_list):
             k = k.replace("/arch/arm/", "/arch_arm/")
             k = k.replace("/arch/arm64/", "/arch_arm64/")
             k = k.replace("/arch/x86/", "/arch_x86/")
-        p, l = k.split(":")
+        # If the path is just a name, i.e. [ld.so], use it directly and set line# to 0
+        if (k.startswith("[")):
+            p = k
+            l = 0
+        else:
+            p, l = k.split(":")
         treemap = add_node_to_treemap(treemap, p, int(v))
         # print(p, l, v)
     # print(treemap)
