@@ -148,8 +148,12 @@ def parse_codes(data):
     output_str = ""
     file_content_map = {}
     for key, value in data.items():
-        fname = key.split(':')[0]
-        line = int(key.split(':')[1])
+        if (key.startswith("[")):
+            fname = key
+            line = 0
+        else:
+            fname = key.split(':')[0]
+            line = int(key.split(':')[1])
         if fname in file_content_map:
             while(True):
                 try:
