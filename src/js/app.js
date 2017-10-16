@@ -1,25 +1,25 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { Route, IndexRoute, Link } from "react-router";
-import { HashRouter } from "react-router-dom";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Route, IndexRoute, Link } from 'react-router';
+import { HashRouter } from 'react-router-dom';
 
-import { Provider } from "react-redux"
-import store from "./store"
+import { Provider } from 'react-redux';
+import store from './store';
 
-import Layout from "./pages/Layout";
-import Footer from "./components/layout/Footer";
+import Layout from './pages/Layout';
+import Footer from './components/layout/Footer';
 
 const app = document.getElementById('app');
 
 const containerStyle = {
-    marginTop: "30px"
-};
+    marginTop: '30px'
+  };
 
 ReactDOM.render(
 <Provider store={store}>
   <HashRouter>
-    <div class="container-fluid" style={containerStyle}>
-      <Route path="/" component={Layout} />
+    <div class='container-fluid' style={containerStyle}>
+      <Route path='/' component={Layout} />
       <Footer/>
     </div>
   </HashRouter>
