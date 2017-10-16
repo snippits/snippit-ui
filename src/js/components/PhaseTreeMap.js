@@ -3,7 +3,7 @@ import { connect } from "react-redux"
 
 import Highcharts from "highcharts";
 import ReactHighcharts from 'react-highcharts';
-import HighchartsTreemap from 'highcharts/modules/treemap';
+import HighchartsTreemap from 'highcharts-treemap';
 HighchartsTreemap(ReactHighcharts.Highcharts);
 
 import { fetchTreemap } from "../actions/phaseActions.js"
