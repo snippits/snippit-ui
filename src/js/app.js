@@ -1,21 +1,27 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { Router, Route, IndexRoute, hashHistory } from "react-router";
+import { Route, IndexRoute, Link } from "react-router";
+import { HashRouter } from "react-router-dom";
 
 import { Provider } from "react-redux"
 import store from "./store"
 
-import Phase from "./pages/Phase";
 import Layout from "./pages/Layout";
+import Footer from "./components/layout/Footer";
 
 const app = document.getElementById('app');
 
+const containerStyle = {
+    marginTop: "30px"
+};
+
 ReactDOM.render(
 <Provider store={store}>
-  <Router history={hashHistory}>
-    <Route path="/" component={Layout}>
-      <IndexRoute component={Phase}></IndexRoute>
-    </Route>
-  </Router>
+  <HashRouter>
+    <div class="container-fluid" style={containerStyle}>
+      <Route path="/" component={Layout} />
+      <Footer/>
+    </div>
+  </HashRouter>
 </Provider>,
 app);

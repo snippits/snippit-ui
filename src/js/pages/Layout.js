@@ -1,14 +1,13 @@
 import React from "react";
-import { Link } from "react-router";
+import { Link, Route } from 'react-router-dom';
 
-import Footer from "../components/layout/Footer";
+import Phase from "./Phase";
 
 export default class Layout extends React.Component {
   render() {
     const { location } = this.props;
-    const containerStyle = {
-      marginTop: "30px"
-    };
+    const { match } = this.props;
+
     const timelineStyle = {
       height: "500px",
       minWidth: "310px",
@@ -18,18 +17,18 @@ export default class Layout extends React.Component {
       minWidth: "310px",
     };
 
+    // Set to empty string to make the route work at index
+    if (match.url === "/") match.url = "";
+
     console.log("layout");
     return (
-        <div class="container-fluid" style={containerStyle}>
-          <div class="row">
-            <div class="col-12">
-              <h1>Snippit UI</h1>
-            </div>
-            <div class="col-12">
-              {this.props.children}
-            </div>
+        <div class="row">
+          <div class="col-12">
+            <h1>Snippit UI</h1>
           </div>
-          <Footer/>
+          <div class="col-12">
+            <Route path={`${match.url}/phase/:phaseID?`} component={Phase} />
+          </div>
         </div>
     );
   }

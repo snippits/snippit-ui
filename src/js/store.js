@@ -1,12 +1,19 @@
 import { applyMiddleware, createStore } from "redux"
+import { createLogger } from 'redux-logger'
 
-import logger from "redux-logger"
 import thunk from "redux-thunk"
-import promise from "redux-promise-middleware"
+import promiseMiddleware from "redux-promise-middleware"
 import multi from 'redux-multi'
 
 import reducer from "./reducers"
 
-const middleware = applyMiddleware(multi, promise(), thunk, logger())
+const middlewares = [multi, promiseMiddleware(), thunk];
 
-export default createStore(reducer, middleware)
+const logger = createLogger({
+    collapsed: (getState, action, logEntry) => !logEntry.error,
+    duration: true
+});
+
+middlewares.push(logger);
+
+export default createStore(reducer, applyMiddleware(...middlewares));
