@@ -35,7 +35,7 @@ export default function reducer(state={
     },
     timeline: {
         data: [],
-        similarity_threshold: null,
+        similarity_threshold: 0,
         fetching: false,
         fetched: false,
         error: null,
