@@ -27,7 +27,7 @@ export default class Layout extends React.Component {
             <h1>Snippit UI</h1>
           </div>
           <div class='col-12'>
-            <Route path={`${match.url}/phase/:phaseID?`} component={Phase} />
+            <Route path={`${match.url}/:page?/:phaseID?`} component={Phase} />
           </div>
         </div>
     );
