@@ -34,6 +34,7 @@
   "devDependencies": {},
   "scripts": {
     "dev": "webpack-dev-server --content-base public --inline --hot",
+    "watch": "webpack --progress -d --config webpack.config.js --watch",
     "build": "webpack"
   },
   "author": "Medicine Yeh",
