@@ -5,7 +5,7 @@ var path = require('path');
 module.exports = {
   context: path.join(__dirname, "src"),
   devtool: debug ? "inline-sourcemap" : null,
-  entry: path.resolve(__dirname, 'src/js/app.js'),
+  entry: path.resolve(__dirname, 'src/js/app.jsx'),
   module: {
     loaders: [
       {
@@ -18,6 +18,9 @@ module.exports = {
         }
       }
     ]
+  },
+  resolve: {
+    extensions: ['.js', '.jsx', '.css']
   },
   output: {
     path: path.resolve(__dirname, "public"),
