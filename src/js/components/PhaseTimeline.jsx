@@ -1,8 +1,10 @@
 import React from 'react';
 import {connect} from 'react-redux';
 
-import ReactHighstock from 'react-highcharts/ReactHighstock';
 import SimilaritySlider from '../components/SimilaritySlider';
+import ReactHighstock from 'react-highcharts/ReactHighstock';
+import extendExporting from 'highcharts-exporting';
+extendExporting(ReactHighstock.Highcharts);
 
 import {fetchTimeline, setSelectedPhase} from '../actions/phaseActions.js';
 

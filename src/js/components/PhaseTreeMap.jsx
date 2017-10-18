@@ -5,6 +5,8 @@ import Highcharts from 'highcharts';
 import ReactHighcharts from 'react-highcharts';
 import extendTreemap from 'highcharts-treemap';
 extendTreemap(ReactHighcharts.Highcharts);
+import extendExporting from 'highcharts-exporting';
+extendExporting(ReactHighcharts.Highcharts);
 
 // Related articles
 // http://www.highcharts.com/blog/post/192-use-highcharts-to-create-charts-in-react/
