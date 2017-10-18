@@ -39,7 +39,7 @@ export function fetchTreemap(phaseID) {
 }
 
 export function fetchCode(phaseID) {
-    let link = 'output/phase-code-' + phaseID + '?_=' + new Date().getTime();
+    let link = 'phase/' + phaseID + '/codes?_=' + new Date().getTime();
     return function(dispatch) {
         axios.get(link)
             .then((response) => {
