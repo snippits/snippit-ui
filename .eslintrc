@@ -21,6 +21,7 @@
     "google",
   ],
   "rules": {
+    "no-console": 1,
     "indent": [
       "error", 4, {
         "SwitchCase": 1,
