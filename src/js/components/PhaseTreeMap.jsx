@@ -64,8 +64,6 @@ export default class PhaseTreeMap extends React.Component {
         super();
 
         this.config = {};
-        this.phase_id = -1;
-        this.last_selected_phase_id = -1;
         this.state = {
         };
     }
