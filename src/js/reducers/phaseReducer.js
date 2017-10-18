@@ -25,7 +25,7 @@ function phaseReducerHelper(action, obj) {
             break;
         }
     }
-    if (obj.phaseID !== undefined) obj.phaseID = action.phaseID;
+    if (action.phaseID !== undefined) obj.phaseID = action.phaseID;
 
     return obj;
 }
