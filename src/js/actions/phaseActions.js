@@ -66,13 +66,10 @@ export function fetchProf(phaseID) {
 
 export function setSelectedPhase(phaseID) {
     if (phaseID) {
-        return [{
-            type: 'SET_SELECTED_PHASE_ID',
-            payload: phaseID,
-        },
-        fetchTreemap(phaseID),
-        fetchCode(phaseID),
-        fetchProf(phaseID),
+        return [
+            fetchTreemap(phaseID),
+            fetchCode(phaseID),
+            fetchProf(phaseID),
         ];
     }
     return null;

@@ -34,9 +34,6 @@ function phaseReducerHelper(action, obj) {
 }
 
 export default function reducer(state={
-    phase: {
-        id: null,
-    },
     timeline: {
         data: [],
         similarityThreshold: 0,
@@ -83,16 +80,6 @@ export default function reducer(state={
             case 'PROF': {
                 return {...state, prof: phaseReducerHelper(action, {...state.prof})};
             }
-        }
-    }
-
-    // Do other requests
-    switch (action.type) {
-        case 'SET_SELECTED_PHASE_ID': {
-            return {
-                ...state,
-                phase: {...state.phase, id: action.payload},
-            };
         }
     }
 
