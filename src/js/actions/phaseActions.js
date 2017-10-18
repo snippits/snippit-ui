@@ -29,10 +29,10 @@ export function fetchTreemap(phaseID) {
     return function(dispatch) {
         axios.get(link)
             .then((response) => {
-                dispatch({type: 'FETCH_TREEMAP_FULFILLED', payload: response.data});
+                dispatch({type: 'FETCH_TREEMAP_FULFILLED', payload: response.data, phaseID: phaseID});
             })
             .catch((err) => {
-                dispatch({type: 'FETCH_TREEMAP_REJECTED', payload: err});
+                dispatch({type: 'FETCH_TREEMAP_REJECTED', payload: err, phaseID: phaseID});
             });
     };
 }
@@ -42,10 +42,10 @@ export function fetchCode(phaseID) {
     return function(dispatch) {
         axios.get(link)
             .then((response) => {
-                dispatch({type: 'FETCH_CODE_FULFILLED', payload: response.data});
+                dispatch({type: 'FETCH_CODE_FULFILLED', payload: response.data, phaseID: phaseID});
             })
             .catch((err) => {
-                dispatch({type: 'FETCH_CODE_REJECTED', payload: err});
+                dispatch({type: 'FETCH_CODE_REJECTED', payload: err, phaseID: phaseID});
             });
     };
 }
@@ -55,10 +55,10 @@ export function fetchProf(phaseID) {
     return function(dispatch) {
         axios.get(link)
             .then((response) => {
-                dispatch({type: 'FETCH_PROF_FULFILLED', payload: response.data});
+                dispatch({type: 'FETCH_PROF_FULFILLED', payload: response.data, phaseID: phaseID});
             })
             .catch((err) => {
-                dispatch({type: 'FETCH_PROF_REJECTED', payload: err});
+                dispatch({type: 'FETCH_PROF_REJECTED', payload: err, phaseID: phaseID});
             });
     };
 }

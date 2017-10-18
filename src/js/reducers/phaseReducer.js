@@ -25,6 +25,7 @@ function phaseReducerHelper(action, obj) {
             break;
         }
     }
+    if (obj.phaseID !== undefined) obj.phaseID = action.phaseID;
 
     return obj;
 }
@@ -42,18 +43,21 @@ export default function reducer(state={
     },
     treemap: {
         data: [],
+        phaseID: -1,
         fetching: false,
         fetched: false,
         error: null,
     },
     code: {
         data: [],
+        phaseID: -1,
         fetching: false,
         fetched: false,
         error: null,
     },
     prof: {
         data: {},
+        phaseID: -1,
         fetching: false,
         fetched: false,
         error: null,
