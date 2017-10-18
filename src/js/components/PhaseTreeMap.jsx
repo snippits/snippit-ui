@@ -87,16 +87,19 @@ export default class PhaseTreeMap extends React.Component {
         console.log('PhaseTreeMap');
 
         if (treemap.error) {
-            let chart = this.refs.chart.getChart();
+            let chart = this.chart.getChart();
             chart.series[0].setData([{name: 'Profiling Result Not Found', id: 'id_0', value: 1}]);
         } else if (treemap.fetched) {
-            let chart = this.refs.chart.getChart();
+            let chart = this.chart.getChart();
             chart.series[0].setData(treemap.data);
         }
 
         return (
             <div className='col-md-12'>
-                <ReactHighcharts config={this.config} isPureConfig={treemap.fetching} ref='chart'></ReactHighcharts>
+                <ReactHighcharts
+                    config={this.config}
+                    isPureConfig={treemap.fetching}
+                    ref={(ref) => this.chart = ref} />
             </div>
         );
     }

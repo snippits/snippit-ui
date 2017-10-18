@@ -148,22 +148,26 @@ export default class PhaseTimeline extends React.Component {
         const {timeline} = this.props;
 
         if (timeline.error) {
-            let chart = this.refs.chart.getChart();
+            let chart = this.chart.getChart();
             chart.showLoading('Timeline Result Not Found');
         } else if (timeline.fetching) {
-            let chart = this.refs.chart.getChart();
+            let chart = this.chart.getChart();
             chart.showLoading('Loading data from server...');
         } else if (timeline.fetched) {
-            let chart = this.refs.chart.getChart();
+            let chart = this.chart.getChart();
             chart.series[0].setData(timeline.data);
             chart.hideLoading();
         }
 
         return (
             <div className='col-md-12'>
-                <SimilaritySlider set_change={this.handleSliderChange.bind(this)}
+                <SimilaritySlider
+                    set_change={this.handleSliderChange.bind(this)}
                     similarityThreshold={timeline.similarityThreshold} />
-                <ReactHighstock config={this.config} isPureConfig={true} ref='chart'></ReactHighstock>
+                <ReactHighstock
+                    config={this.config}
+                    isPureConfig={true}
+                    ref={(ref) => this.chart = ref} />
             </div>
         );
     }
