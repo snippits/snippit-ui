@@ -1,12 +1,5 @@
 import axios from 'axios';
 
-export function setSimilarityThreshold(similarityThreshold) {
-    return {
-        type: 'SET_SIMILARITY_THRESHOLD',
-        payload: similarityThreshold,
-    };
-}
-
 // TODO: Add Cancellation in case of long latency
 export function fetchTimeline(similarityThreshold) {
     let link = 'output/phase-history-' + (similarityThreshold / 10) + '.json?_=' + new Date().getTime();
@@ -16,10 +9,18 @@ export function fetchTimeline(similarityThreshold) {
         dispatch({type: 'FETCH_TIMELINE'});
         axios.get(link)
             .then((response) => {
-                dispatch({type: 'FETCH_TIMELINE_FULFILLED', payload: response.data});
+                dispatch({
+                    type: 'FETCH_TIMELINE_FULFILLED',
+                    payload: response.data,
+                    similarityThreshold: similarityThreshold,
+                });
             })
             .catch((err) => {
-                dispatch({type: 'FETCH_TIMELINE_REJECTED', payload: err});
+                dispatch({
+                    type: 'FETCH_TIMELINE_REJECTED',
+                    payload: err,
+                    similarityThreshold: similarityThreshold,
+                });
             });
     };
 }

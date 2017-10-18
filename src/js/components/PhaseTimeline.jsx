@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import ReactHighstock from 'react-highcharts/ReactHighstock';
 import SimilaritySlider from '../components/SimilaritySlider';
 
-import {fetchTimeline, setSimilarityThreshold, setSelectedPhase} from '../actions/phaseActions.js';
+import {fetchTimeline, setSelectedPhase} from '../actions/phaseActions.js';
 
 // Related articles
 // http://www.highcharts.com/blog/post/192-use-highcharts-to-create-charts-in-react/
@@ -104,7 +104,11 @@ export default class PhaseTimeline extends React.Component {
 
         this.config = {};
         this.state = {
+            similarityThreshold: 0,
         };
+
+        // This binding is necessary to make `this` work in the callback
+        this.handleSliderChange = this.handleSliderChange.bind(this);
     }
 
     // When the DOM is ready, create the chart.
@@ -124,7 +128,7 @@ export default class PhaseTimeline extends React.Component {
 
         // Set initial value if it's not assigned
         let similarityThreshold = this.props.similarityThreshold;
-        this.props.dispatch(setSimilarityThreshold(similarityThreshold));
+        this.setState({similarityThreshold: similarityThreshold});
         this.props.dispatch(fetchTimeline(similarityThreshold));
     }
 
@@ -139,7 +143,7 @@ export default class PhaseTimeline extends React.Component {
     }
 
     handleSliderChange(value) {
-        this.props.dispatch(setSimilarityThreshold(value));
+        this.setState({similarityThreshold: value});
         this.props.dispatch(fetchTimeline(value));
     }
 
@@ -162,8 +166,8 @@ export default class PhaseTimeline extends React.Component {
         return (
             <div className='col-md-12'>
                 <SimilaritySlider
-                    set_change={this.handleSliderChange.bind(this)}
-                    similarityThreshold={timeline.similarityThreshold} />
+                    onChange={this.handleSliderChange}
+                    value={this.state.similarityThreshold} />
                 <ReactHighstock
                     config={this.config}
                     isPureConfig={true}

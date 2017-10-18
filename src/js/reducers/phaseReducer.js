@@ -26,6 +26,9 @@ function phaseReducerHelper(action, obj) {
         }
     }
     if (action.phaseID !== undefined) obj.phaseID = action.phaseID;
+    if (action.similarityThreshold !== undefined) {
+        obj.similarityThreshold = action.similarityThreshold;
+    }
 
     return obj;
 }
@@ -90,9 +93,6 @@ export default function reducer(state={
                 ...state,
                 phase: {...state.phase, id: action.payload},
             };
-        }
-        case 'SET_SIMILARITY_THRESHOLD': {
-            return {...state, timeline: {...state.timeline, similarityThreshold: parseInt(action.payload)}};
         }
     }
 
