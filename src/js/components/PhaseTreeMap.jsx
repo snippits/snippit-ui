@@ -3,8 +3,8 @@ import {connect} from 'react-redux';
 
 import Highcharts from 'highcharts';
 import ReactHighcharts from 'react-highcharts';
-import HighchartsTreemap from 'highcharts-treemap';
-HighchartsTreemap(ReactHighcharts.Highcharts);
+import extendTreemap from 'highcharts-treemap';
+extendTreemap(ReactHighcharts.Highcharts);
 
 // Related articles
 // http://www.highcharts.com/blog/post/192-use-highcharts-to-create-charts-in-react/
