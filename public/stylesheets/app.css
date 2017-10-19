@@ -3,3 +3,22 @@ pre {
     height: 700px;
 }
 
+/* select codes with no-border class on it */
+code .table tbody tr.no-border td {
+    /* remove borders on the codes */
+    border: none;
+}
+
+/* select the line number column in a table */
+td.line-num {
+    /* set the width to fit its content */
+    white-space: nowrap;
+    width: 1%;
+}
+
+/* select the walk count column in a table */
+td.walk-count {
+    /* set the width to fit its content */
+    white-space: nowrap;
+    width: 1%;
+}
