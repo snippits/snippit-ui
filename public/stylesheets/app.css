@@ -14,11 +14,33 @@ td.line-num {
     /* set the width to fit its content */
     white-space: nowrap;
     width: 1%;
+    text-align: right;
 }
 
 /* select the walk count column in a table */
 td.walk-count {
     /* set the width to fit its content */
+    white-space: nowrap;
+    width: 1%;
+    text-align: right;
+}
+
+/* table data */
+td {
+    vertical-align: middle;
+}
+/* table header */
+th {
+    text-align: center;
+}
+
+/* helper class */
+.align-right {
+    text-align: right;
+}
+
+/* set the width to fit its content */
+.width-fit-content{
     white-space: nowrap;
     width: 1%;
 }

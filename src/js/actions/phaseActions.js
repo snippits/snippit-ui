@@ -52,7 +52,7 @@ export function fetchCode(phaseID) {
 }
 
 export function fetchProf(phaseID) {
-    let link = 'output/phase-prof-' + phaseID + '?_=' + new Date().getTime();
+    let link = 'phase/' + phaseID + '/prof?_=' + new Date().getTime();
     return function(dispatch) {
         axios.get(link)
             .then((response) => {
