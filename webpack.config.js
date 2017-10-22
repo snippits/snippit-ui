@@ -16,10 +16,32 @@ module.exports = {
           presets: ['react', 'env', 'stage-0'],
           plugins: ['react-html-attrs', 'transform-class-properties', 'transform-decorators-legacy'],
         }
+      },
+      {
+        test: /\.css$/,
+        exclude: /node_modules/,
+          use: [
+            {
+              loader: 'style-loader',
+            },
+            {
+              loader: 'css-loader',
+              options: {
+                  importLoaders: 1,
+              }
+            },
+            {
+              loader: 'postcss-loader'
+            }
+          ]
       }
     ]
   },
   resolve: {
+    alias: {
+      'components': path.resolve(__dirname, 'src/js/components'),
+      'styles': path.resolve(__dirname, 'src/stylesheets'),
+    },
     extensions: ['.js', '.jsx', '.css']
   },
   output: {

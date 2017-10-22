@@ -9,6 +9,8 @@ import store from './store';
 import Layout from './pages/Layout';
 import Footer from './components/layout/Footer';
 
+import 'styles/range-slider.css';
+
 const app = document.getElementById('app');
 
 const containerStyle = {

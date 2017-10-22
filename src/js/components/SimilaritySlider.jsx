@@ -17,9 +17,11 @@ export default class SimilaritySlider extends React.Component {
             <div className='col-md-12'>
                 <div className='col-md-3'>
                     <p>Phase Similarity Filter:</p>
-                    <input type='range' min='0' max='100' step='10'
-                        value={this.props.value} onChange={this.handleChange}>
-                    </input>
+                    <div className="range-slider">
+                        <input className="range-slider__range" type='range' min='0' max='100' step='5'
+                            value={this.props.value} onChange={this.handleChange} />
+                        <span className="range-slider__value">{this.props.value} %</span>
+                    </div>
                 </div>
             </div>
         );
