@@ -26,7 +26,7 @@ def parsePhase(path):
         return json.load(json_data)
     return {}
 
-def parsePhases(proc_path):
+def parseAllProcesses(proc_path):
     ret_dict = {}
     for dirname in os.listdir(proc_path):
         phase_path = os.path.join(proc_path, dirname)
@@ -49,7 +49,7 @@ def static_file(path):
 
 @app.route('/phase/<int:phase_id>/prof', methods=['POST'])
 def get_phase_prof(phase_id):
-    info = phase_info['default_']['info'];
+    info = phase_info['default_']['info']
     # Use the last element as default
     response = app.response_class(
         response=json.dumps(info['phase'][phase_id]['counters']),
@@ -60,7 +60,7 @@ def get_phase_prof(phase_id):
 
 @app.route('/phase/<int:phase_id>/codes', methods=['POST'])
 def get_phase_code(phase_id):
-    info = phase_info['default_']['info'];
+    info = phase_info['default_']['info']
     # Use the last element as default
     response = app.response_class(
         response=json.dumps(info['phase'][phase_id]['codes']),
@@ -95,8 +95,8 @@ def main(argv):
     input_path = os.path.abspath(args.input)
     proc_path = os.path.join(input_path, 'proc')
 
-    global phase_info;
-    phase_info = parsePhases(proc_path);
+    global phase_info
+    phase_info = parseAllProcesses(proc_path)
 
     app.run(host=DEFAULT_HOST, port=DEFAULT_PORT)
 

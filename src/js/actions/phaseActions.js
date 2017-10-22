@@ -41,26 +41,24 @@ export function fetchTreemap(phaseID) {
 export function fetchCode(phaseID) {
     let link = 'phase/' + phaseID + '/codes';
     return function(dispatch) {
-        axios.post(link)
-            .then((response) => {
-                dispatch({type: 'FETCH_CODE_FULFILLED', payload: response.data, phaseID: phaseID});
-            })
-            .catch((err) => {
-                dispatch({type: 'FETCH_CODE_REJECTED', payload: err, phaseID: phaseID});
-            });
+        axios.post(link, {
+        }).then((response) => {
+            dispatch({type: 'FETCH_CODE_FULFILLED', payload: response.data, phaseID: phaseID});
+        }).catch((err) => {
+            dispatch({type: 'FETCH_CODE_REJECTED', payload: err, phaseID: phaseID});
+        });
     };
 }
 
 export function fetchProf(phaseID) {
     let link = 'phase/' + phaseID + '/prof';
     return function(dispatch) {
-        axios.post(link)
-            .then((response) => {
-                dispatch({type: 'FETCH_PROF_FULFILLED', payload: response.data, phaseID: phaseID});
-            })
-            .catch((err) => {
-                dispatch({type: 'FETCH_PROF_REJECTED', payload: err, phaseID: phaseID});
-            });
+        axios.post(link, {
+        }).then((response) => {
+            dispatch({type: 'FETCH_PROF_FULFILLED', payload: response.data, phaseID: phaseID});
+        }).catch((err) => {
+            dispatch({type: 'FETCH_PROF_REJECTED', payload: err, phaseID: phaseID});
+        });
     };
 }
 
