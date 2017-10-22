@@ -39,9 +39,9 @@ export function fetchTreemap(phaseID) {
 }
 
 export function fetchCode(phaseID) {
-    let link = 'phase/' + phaseID + '/codes?_=' + new Date().getTime();
+    let link = 'phase/' + phaseID + '/codes';
     return function(dispatch) {
-        axios.get(link)
+        axios.post(link)
             .then((response) => {
                 dispatch({type: 'FETCH_CODE_FULFILLED', payload: response.data, phaseID: phaseID});
             })
@@ -52,9 +52,9 @@ export function fetchCode(phaseID) {
 }
 
 export function fetchProf(phaseID) {
-    let link = 'phase/' + phaseID + '/prof?_=' + new Date().getTime();
+    let link = 'phase/' + phaseID + '/prof';
     return function(dispatch) {
-        axios.get(link)
+        axios.post(link)
             .then((response) => {
                 dispatch({type: 'FETCH_PROF_FULFILLED', payload: response.data, phaseID: phaseID});
             })

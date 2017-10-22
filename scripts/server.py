@@ -47,7 +47,7 @@ def root():
 def static_file(path):
     return send_from_directory(STATIC_DIR, path, cache_timeout=0)
 
-@app.route('/phase/<int:phase_id>/prof')
+@app.route('/phase/<int:phase_id>/prof', methods=['POST'])
 def get_phase_prof(phase_id):
     info = phase_info['default_']['info'];
     # Use the last element as default
@@ -58,7 +58,7 @@ def get_phase_prof(phase_id):
     )
     return response
 
-@app.route('/phase/<int:phase_id>/codes')
+@app.route('/phase/<int:phase_id>/codes', methods=['POST'])
 def get_phase_code(phase_id):
     info = phase_info['default_']['info'];
     # Use the last element as default
