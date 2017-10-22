@@ -5,10 +5,8 @@ The user interface of Snippit project.
 This repo is still under development, feel free to send a bug report.
 
 # Usage
-1. Parse the output of profiling. `./scripts/parse.py -i /path/to/output/PID`
-2. Enter the folder __public__.
-3. Open an simple http server in the folder __public__. `python3 -m http.server`
-4. Use your web browser to open `http://127.0.0.1:8000/`
+1. Open the server to load your Snippits output. `./script/server.py` (Default: /tmp/snippits)
+2. Use your web browser to open `http://127.0.0.1:5000/`
 
 # Important Note on Code Mapping
 * If your application does not contain DWARF (i.e. gcc -g), the Code section might be blank.
@@ -16,22 +14,15 @@ This repo is still under development, feel free to send a bug report.
 * The current version does not search for file, it uses the absolute path to locate the file.
 You must compile the binary on your machine in order to make code mapping work.
 
-# Example
-``` bash
-./scripts/parse.py -i /tmp/snippit/phase/740
-cd ./public && python3 -m http.server
-```
-
 # Development Mode of source code
 ```
 npm install
-npm run dev
+npm run watch
 ```
 
-# Python Async Server (on-going)
+# Running the server (Flask)
 Install all the dependencies
 ```
-pip3 install aiohttp cchardet aiodns
+pip3 install flask flask-script Flask-Sockets
 ```
 Run it by `./script/server.py`
-
