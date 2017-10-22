@@ -2,26 +2,26 @@ import axios from 'axios';
 
 // TODO: Add Cancellation in case of long latency
 export function fetchTimeline(similarityThreshold) {
-    let link = 'output/phase-history-' + (similarityThreshold / 10) + '.json?_=' + new Date().getTime();
+    let link = 'phase/timeline';
 
     console.log(link);
     return function(dispatch) {
         dispatch({type: 'FETCH_TIMELINE'});
-        axios.get(link)
-            .then((response) => {
-                dispatch({
-                    type: 'FETCH_TIMELINE_FULFILLED',
-                    payload: response.data,
-                    similarityThreshold: similarityThreshold,
-                });
-            })
-            .catch((err) => {
-                dispatch({
-                    type: 'FETCH_TIMELINE_REJECTED',
-                    payload: err,
-                    similarityThreshold: similarityThreshold,
-                });
+        axios.post(link, {
+            similarityThreshold: similarityThreshold,
+        }).then((response) => {
+            dispatch({
+                type: 'FETCH_TIMELINE_FULFILLED',
+                payload: response.data,
+                similarityThreshold: similarityThreshold,
             });
+        }).catch((err) => {
+            dispatch({
+                type: 'FETCH_TIMELINE_REJECTED',
+                payload: err,
+                similarityThreshold: similarityThreshold,
+            });
+        });
     };
 }
 

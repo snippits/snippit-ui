@@ -6,6 +6,7 @@ import sys
 import getopt
 import glob
 import json
+import time
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
@@ -26,14 +27,34 @@ def parsePhase(path):
         return json.load(json_data)
     return {}
 
+def parseSimilarityMatrix(path):
+    phase_path = path + '/phase_similarity_matrix'
+    with open(phase_path) as json_data:
+        return json.load(json_data)
+    return {}
+
 def parseAllProcesses(proc_path):
     ret_dict = {}
     for dirname in os.listdir(proc_path):
         phase_path = os.path.join(proc_path, dirname)
         print('Found process \'' + phase_path + '\'')
-        ret_dict[str(dirname)] = {'info': parsePhase(phase_path)}
+        ret_dict[str(dirname)] = {
+                    'info': parsePhase(phase_path),
+                    'similarityMatrix': parseSimilarityMatrix(phase_path),
+                }
         ret_dict['default_'] = ret_dict[str(dirname)] # remember the last inserted one as default
     return ret_dict
+
+def createMappingTable(simMat, simTh):
+    # Create identical mapping first
+    mappingTable = list(range(len(simMat)))
+    for i in range(len(mappingTable)):
+        for j in range(0, i):
+            if (simMat[i][j] >= simTh):
+                #print(str(mappingTable[i]) + 'to' + str(mappingTable[j]))
+                mappingTable[i] = mappingTable[j]
+                break
+    return mappingTable
 
 # set the project root directory as the static folder
 app = Flask(__name__)
@@ -46,6 +67,23 @@ def root():
 @app.route('/<path:path>')
 def static_file(path):
     return send_from_directory(STATIC_DIR, path, cache_timeout=0)
+
+@app.route('/phase/timeline', methods=['POST'])
+def get_phase_timeline():
+    info = phase_info['default_']['info']
+    requestValues = request.get_json(silent=True)
+    simMat = phase_info['default_']['similarityMatrix']
+    simTh = float(requestValues['similarityThreshold']) / 100.0
+
+    mappingTable = createMappingTable(simMat, simTh)
+    timeline = [ [kv[0], mappingTable[kv[1]]] for kv in info['timeline'] ]
+    # Use the last element as default
+    response = app.response_class(
+        response=json.dumps(timeline),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
 
 @app.route('/phase/<int:phase_id>/prof', methods=['POST'])
 def get_phase_prof(phase_id):
