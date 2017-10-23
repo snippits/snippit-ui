@@ -42,7 +42,7 @@ def get_phase_timeline():
     simMat = processes['default_']['similarityMatrix']
     simTh = float(requestValues['similarityThreshold']) / 100.0
 
-    mappingTable = createMappingTable.earliestMatch(simMat, simTh)
+    mappingTable = createMappingTable.npNearestAbove(simMat, simTh)
     timeline = [ [kv[0], mappingTable[kv[1]]] for kv in info['timeline'] ]
     # Use the last element as default
     response = app.response_class(
