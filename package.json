@@ -58,6 +58,9 @@
     "watch": "webpack --progress -d --config webpack.config.js --watch",
     "build": "webpack"
   },
+  "engines": {
+    "node" : ">=8"
+  },
   "author": "Medicine Yeh",
   "license": "MIT"
 }

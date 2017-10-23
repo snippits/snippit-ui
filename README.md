@@ -16,7 +16,10 @@ You must compile the binary on your machine in order to make code mapping work.
 
 # Development Mode of source code
 ```
-npm install
+
+# Prerequisites: yarn, node 8.x.x
+
+yarn install
 npm run watch
 ```
 
