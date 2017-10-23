@@ -35,17 +35,17 @@ if (os.environ.get('SNIPPIT_UI_CONFIG')):
     app.config.from_envvar('SNIPPIT_UI_CONFIG')
 
 # Necessary configuration to initialize flask-profiler:
-app.config["flask_profiler"] = {
-    "enabled": app.config["DEBUG"],
-    "storage": {
-        "engine": "sqlite"
+app.config['flask_profiler'] = {
+    'enabled': app.config['DEBUG'],
+    'storage': {
+        'engine': 'sqlite'
     },
-    "basicAuth":{
-        "enabled": True,
-        "username": "admin",
-        "password": "admin"
+    'basicAuth':{
+        'enabled': True,
+        'username': 'admin',
+        'password': 'admin'
     },
-    "ignore": [
+    'ignore': [
     ]
 }
 
@@ -134,13 +134,15 @@ def main(argv):
     print(' * Server running on: {}http://{}:{}/{}'.format(
             bcolors.OKBLUE, args.host, args.port, bcolors.ENDC
         ))
-    if (app.config["DEBUG"]):
+    if (app.config['DEBUG']):
         print(' * Profiling results on: {}http://{}:{}/flask-profiler/{}'.format(
             bcolors.OKBLUE, args.host, args.port, bcolors.ENDC
             ))
-        auth = app.config["flask_profiler"]["basicAuth"]
+        auth = app.config['flask_profiler']['basicAuth']
         print('       username: {}    password: {}'.format(auth['username'], auth['password']))
-    app.run(host=args.host, port=args.port)
+        app.run(host=args.host, port=args.port, use_debugger=True, use_reloader=True)
+    else:
+        app.run(host=args.host, port=args.port)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

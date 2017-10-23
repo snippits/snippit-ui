@@ -18,7 +18,7 @@ def parseAllProcesses(proc_path):
     ret_dict = {}
     for dirname in os.listdir(proc_path):
         phase_path = os.path.join(proc_path, dirname)
-        print('Found process \'' + phase_path + '\'')
+        print('Found process \'{}\''.format(phase_path))
         ret_dict[str(dirname)] = {
                     'info': parsePhase(phase_path),
                     'similarityMatrix': parseSimilarityMatrix(phase_path),
