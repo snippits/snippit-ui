@@ -9,12 +9,15 @@ import json
 import time
 import myutils.processParser as processParser
 import myutils.createMappingTable as createMappingTable
+from myutils.terminalColors import bcolors
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 import textwrap
 
 from flask import Flask, request, send_from_directory, send_file
+import flask_profiler
+
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 PARENTDIR = os.path.dirname(BASE_PATH)
@@ -23,8 +26,28 @@ STATIC_DIR = os.path.join(BASE_PATH, '..', 'public')
 DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 5000
 
-# set the project root directory as the static folder
+# Set the project root directory as the static folder
 app = Flask(__name__)
+
+# Load settings
+app.config.from_object('flask_config.DefaultConfig')
+if (os.environ.get('SNIPPIT_UI_CONFIG')):
+    app.config.from_envvar('SNIPPIT_UI_CONFIG')
+
+# Necessary configuration to initialize flask-profiler:
+app.config["flask_profiler"] = {
+    "enabled": app.config["DEBUG"],
+    "storage": {
+        "engine": "sqlite"
+    },
+    "basicAuth":{
+        "enabled": True,
+        "username": "admin",
+        "password": "admin"
+    },
+    "ignore": [
+    ]
+}
 
 @app.route('/')
 def root():
@@ -74,6 +97,11 @@ def get_phase_code(phase_id):
     )
     return response
 
+# In order to active flask-profiler, you have to pass flask
+# app as an argument to flask-profiler.
+# All the endpoints declared so far will be tracked by flask-profiler.
+flask_profiler.init_app(app)
+
 def get_descriptions():
     return textwrap.dedent('''\
     A webserver for snippits UI web interface.
@@ -103,7 +131,16 @@ def main(argv):
     global processes
     processes = processParser.parseAllProcesses(proc_path)
 
-    app.run(host=DEFAULT_HOST, port=DEFAULT_PORT)
+    print(' * Server running on: {}http://{}:{}/{}'.format(
+            bcolors.OKBLUE, args.host, args.port, bcolors.ENDC
+        ))
+    if (app.config["DEBUG"]):
+        print(' * Profiling results on: {}http://{}:{}/flask-profiler/{}'.format(
+            bcolors.OKBLUE, args.host, args.port, bcolors.ENDC
+            ))
+        auth = app.config["flask_profiler"]["basicAuth"]
+        print('       username: {}    password: {}'.format(auth['username'], auth['password']))
+    app.run(host=args.host, port=args.port)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

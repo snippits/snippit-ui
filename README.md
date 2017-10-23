@@ -23,6 +23,17 @@ npm run watch
 # Running the server (Flask)
 Install all the dependencies
 ```
-pip3 install flask flask-script Flask-Sockets
+pip3 install flask flask-script Flask-Sockets flask_profiler numpy
 ```
 Run it by `./script/server.py`
+
+# Custom Server Config (Flask)
+1. Prepare a file with configs, named `settings.cfg`.
+2. export SNIPPIT_UI_CONFIG=/path/to/settings.cfg
+3. Run `./script/server.py` as usual.
+
+## Example configuration
+```
+DEBUG = False
+SECRET_KEY = '?\xbf,\xb4\x8d\xa3"<\x9c\xb0@\x0f5\xab,w\xee\x8d$0\x13\x8b83'
+```
