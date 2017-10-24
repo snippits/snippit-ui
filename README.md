@@ -23,7 +23,7 @@ npm run watch
 # Running the server (Flask)
 Install all the dependencies
 ```
-pip3 install flask flask-script Flask-Sockets flask_profiler numpy
+pip3 install flask flask-script Flask-Sockets flask_profiler numpy anytree
 ```
 Run it by `./script/server.py`
 

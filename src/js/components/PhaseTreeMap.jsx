@@ -88,7 +88,7 @@ export default class PhaseTreeMap extends React.Component {
 
         if (treemap.error) {
             let chart = this.chart.getChart();
-            chart.series[0].setData([{name: 'Profiling Result Not Found', id: 'id_0', value: 1}]);
+            chart.series[0].setData([{name: 'Profiling Result Not Found', id: 'id_0', value: 1, parent: null}]);
         } else if (treemap.fetched) {
             let chart = this.chart.getChart();
             chart.series[0].setData(treemap.data);

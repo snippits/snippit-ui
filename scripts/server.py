@@ -16,6 +16,7 @@ import flask_profiler
 
 import myutils.processParser as processParser
 import myutils.createMappingTable as createMappingTable
+import myutils.createTreeMap as createTreeMap
 import myutils.terminalColors as bcolors
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -70,6 +71,19 @@ def get_phase_timeline():
     # Use the last element as default
     response = app.response_class(
         response=json.dumps(timeline),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
+
+@app.route('/phase/<int:phase_id>/treemap', methods=['POST'])
+def get_phase_treemap(phase_id):
+    info = processes['default_']['info']
+    codes = info['phase'][phase_id]['codes']
+    treemap = createTreeMap.parse(codes)
+    # Use the last element as default
+    response = app.response_class(
+        response=json.dumps(treemap),
         status=200,
         mimetype='application/json'
     )

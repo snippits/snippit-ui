@@ -26,15 +26,14 @@ export function fetchTimeline(similarityThreshold) {
 }
 
 export function fetchTreemap(phaseID) {
-    let link = 'output/phase-treemap-' + phaseID + '?_=' + new Date().getTime();
+    let link = 'phase/' + phaseID + '/treemap';
     return function(dispatch) {
-        axios.get(link)
-            .then((response) => {
-                dispatch({type: 'FETCH_TREEMAP_FULFILLED', payload: response.data, phaseID: phaseID});
-            })
-            .catch((err) => {
-                dispatch({type: 'FETCH_TREEMAP_REJECTED', payload: err, phaseID: phaseID});
-            });
+        axios.post(link, {
+        }).then((response) => {
+            dispatch({type: 'FETCH_TREEMAP_FULFILLED', payload: response.data, phaseID: phaseID});
+        }).catch((err) => {
+            dispatch({type: 'FETCH_TREEMAP_REJECTED', payload: err, phaseID: phaseID});
+        });
     };
 }
 
