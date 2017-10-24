@@ -7,17 +7,16 @@ import getopt
 import glob
 import json
 import time
-import myutils.processParser as processParser
-import myutils.createMappingTable as createMappingTable
-from myutils.terminalColors import bcolors
-
+import textwrap
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
-import textwrap
 
 from flask import Flask, request, send_from_directory, send_file
 import flask_profiler
 
+import myutils.processParser as processParser
+import myutils.createMappingTable as createMappingTable
+import myutils.terminalColors as bcolors
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 PARENTDIR = os.path.dirname(BASE_PATH)
@@ -65,7 +64,7 @@ def get_phase_timeline():
     simMat = processes['default_']['similarityMatrix']
     simTh = float(requestValues['similarityThreshold']) / 100.0
 
-    mappingTable = createMappingTable.npNearestAbove(simMat, simTh)
+    mappingTable = createMappingTable.nearestAbove(simMat, simTh)
     timeline = [ [kv[0], mappingTable[kv[1]]] for kv in info['timeline'] ]
     # Use the last element as default
     response = app.response_class(
