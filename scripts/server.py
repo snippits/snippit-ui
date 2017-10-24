@@ -24,6 +24,7 @@ PARENTDIR = os.path.dirname(BASE_PATH)
 STATIC_DIR = os.path.join(BASE_PATH, '..', 'public')
 DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 5000
+DEFAULT_INPUT_PATH = '/tmp/snippit'
 
 # Set the project root directory as the static folder
 app = Flask(__name__)
@@ -109,7 +110,7 @@ def get_descriptions():
 def get_sample_usage():
     return textwrap.dedent('''\
     Sample Usage:
-            Ex: server.py -i /tmp/snippit
+            Ex: server.py /tmp/snippit
     ''')
 
 def main(argv):
@@ -117,14 +118,15 @@ def main(argv):
             formatter_class=RawDescriptionHelpFormatter,
             description=get_descriptions(),
             epilog=get_sample_usage())
-    ap.add_argument('--input', '-i', help='Input Directory', type=str, default='/tmp/snippit')
-    ap.add_argument('--host', help='The host ip address on which Snippit webserver serve. ' \
-            'Defaults to' + DEFAULT_HOST, type=str, default=DEFAULT_HOST)
-    ap.add_argument('--port', '-p', help='The port on which Snippit webserver will be hosted. ' \
-            'Defaults to' + str(DEFAULT_PORT), type=int, default=DEFAULT_PORT)
+    ap.add_argument('input_path', metavar='PATH', type=str, nargs='?', default=DEFAULT_INPUT_PATH,
+            help='The path to Snippits output. Defaults to {}'.format(DEFAULT_INPUT_PATH))
+    ap.add_argument('--host', type=str, default=DEFAULT_HOST,
+            help='The host ip address on which Snippit webserver serve. Defaults to {}'.format(DEFAULT_HOST))
+    ap.add_argument('--port', '-p', type=int, default=DEFAULT_PORT,
+            help='The port on which Snippit webserver will be hosted. Defaults to {}'.format(DEFAULT_PORT))
     args = ap.parse_args()
 
-    input_path = os.path.abspath(args.input)
+    input_path = os.path.abspath(args.input_path)
     proc_path = os.path.join(input_path, 'proc')
 
     global processes
