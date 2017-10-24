@@ -1,3 +1,5 @@
+# Copyright (c) 2017, Medicine Yeh
+
 try:
     import numpy as np
     USE_NP = True
