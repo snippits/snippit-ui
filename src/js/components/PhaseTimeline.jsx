@@ -15,6 +15,7 @@ import {fetchTimeline, setSelectedPhase} from '../actions/phaseActions.js';
 const defaultOptions = {
     plotOptions: {
         series: {
+            cursor: 'pointer',
             animation: {
                 duration: 2000,
             },
