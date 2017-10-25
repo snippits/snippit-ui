@@ -139,7 +139,7 @@ export default class PhaseTimeline extends React.Component {
         let selectedItem = event.target['y'];
         // console.log(selectedItem)
         if (selectedItem !== undefined) {
-            this.props.dispatch(setSelectedPhase(selectedItem));
+            this.props.dispatch(setSelectedPhase(selectedItem, this.state.similarityThreshold));
             return true;
         }
         return false;

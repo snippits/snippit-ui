@@ -19,6 +19,8 @@ import myutils.createMappingTable as createMappingTable
 import myutils.createTreeMap as createTreeMap
 import myutils.terminalColors as bcolors
 
+from myutils.phaseProcessor import *
+
 PHASE_CONTEXT_SWITCH = 1
 
 
@@ -53,6 +55,16 @@ app.config['flask_profiler'] = {
     ]
 }
 
+def getSimilarityParams(request):
+    requestValues = request.get_json(silent=True)
+    simMat = processes['default_']['similarityMatrix']
+    if requestValues['similarityThreshold']:
+        simTh = float(requestValues['similarityThreshold']) / 100.0
+    else:
+        simTh = None
+
+    return (simMat, simTh)
+
 @app.route('/')
 def root():
     path = os.path.join(STATIC_DIR, 'index.html')
@@ -65,12 +77,10 @@ def static_file(path):
 @app.route('/phase/timeline', methods=['POST'])
 def get_phase_timeline():
     info = processes['default_']['info']
-    requestValues = request.get_json(silent=True)
-    simMat = processes['default_']['similarityMatrix']
-    simTh = float(requestValues['similarityThreshold']) / 100.0
+    (simMat, simTh) = getSimilarityParams(request)
 
     # Get mapping table and remap the timeline to its new phase ID
-    mappingTable = createMappingTable.nearestAbove(simMat, simTh)
+    mappingTable = getPhaseMappingTable(simMat, simTh)
     timeline = [ [kv[0], mappingTable[kv[1]]] for kv in info['timeline'] ]
     # Get the context switch points
     breakPoints = [ [kv[0], None] for kv in info['events'] if kv[1] == PHASE_CONTEXT_SWITCH ]
@@ -86,9 +96,11 @@ def get_phase_timeline():
 @app.route('/phase/<int:phase_id>/treemap', methods=['POST'])
 def get_phase_treemap(phase_id):
     info = processes['default_']['info']
-    codes = info['phase'][phase_id]['codes']
+    (simMat, simTh) = getSimilarityParams(request)
+
+    merged_phases = getMergedPhases(info['phase'], simMat, simTh)
+    codes = merged_phases[phase_id]['codes']
     treemap = createTreeMap.parse(codes)
-    # Use the last element as default
     response = app.response_class(
         response=json.dumps(treemap),
         status=200,
@@ -99,9 +111,11 @@ def get_phase_treemap(phase_id):
 @app.route('/phase/<int:phase_id>/prof', methods=['POST'])
 def get_phase_prof(phase_id):
     info = processes['default_']['info']
-    # Use the last element as default
+    (simMat, simTh) = getSimilarityParams(request)
+
+    merged_phases = getMergedPhases(info['phase'], simMat, simTh)
     response = app.response_class(
-        response=json.dumps(info['phase'][phase_id]['counters']),
+        response=json.dumps(merged_phases[phase_id]['counters']),
         status=200,
         mimetype='application/json'
     )
@@ -110,9 +124,11 @@ def get_phase_prof(phase_id):
 @app.route('/phase/<int:phase_id>/codes', methods=['POST'])
 def get_phase_code(phase_id):
     info = processes['default_']['info']
-    # Use the last element as default
+    (simMat, simTh) = getSimilarityParams(request)
+
+    merged_phases = getMergedPhases(info['phase'], simMat, simTh)
     response = app.response_class(
-        response=json.dumps(info['phase'][phase_id]['codes']),
+        response=json.dumps(merged_phases[phase_id]['codes']),
         status=200,
         mimetype='application/json'
     )

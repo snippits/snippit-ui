@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // TODO: Add Cancellation in case of long latency
-export function fetchTimeline(similarityThreshold) {
+export function fetchTimeline(similarityThreshold = 100) {
     let link = 'phase/timeline';
 
     console.log(link);
@@ -25,10 +25,11 @@ export function fetchTimeline(similarityThreshold) {
     };
 }
 
-export function fetchTreemap(phaseID) {
+export function fetchTreemap(phaseID, similarityThreshold = 100) {
     let link = 'phase/' + phaseID + '/treemap';
     return function(dispatch) {
         axios.post(link, {
+            similarityThreshold: similarityThreshold,
         }).then((response) => {
             dispatch({type: 'FETCH_TREEMAP_FULFILLED', payload: response.data, phaseID: phaseID});
         }).catch((err) => {
@@ -37,10 +38,11 @@ export function fetchTreemap(phaseID) {
     };
 }
 
-export function fetchCode(phaseID) {
+export function fetchCode(phaseID, similarityThreshold = 100) {
     let link = 'phase/' + phaseID + '/codes';
     return function(dispatch) {
         axios.post(link, {
+            similarityThreshold: similarityThreshold,
         }).then((response) => {
             dispatch({type: 'FETCH_CODE_FULFILLED', payload: response.data, phaseID: phaseID});
         }).catch((err) => {
@@ -49,10 +51,11 @@ export function fetchCode(phaseID) {
     };
 }
 
-export function fetchProf(phaseID) {
+export function fetchProf(phaseID, similarityThreshold = 100) {
     let link = 'phase/' + phaseID + '/prof';
     return function(dispatch) {
         axios.post(link, {
+            similarityThreshold: similarityThreshold,
         }).then((response) => {
             dispatch({type: 'FETCH_PROF_FULFILLED', payload: response.data, phaseID: phaseID});
         }).catch((err) => {
@@ -61,12 +64,12 @@ export function fetchProf(phaseID) {
     };
 }
 
-export function setSelectedPhase(phaseID) {
+export function setSelectedPhase(phaseID, similarityThreshold = 100) {
     if (phaseID) {
         return [
-            fetchTreemap(phaseID),
-            fetchCode(phaseID),
-            fetchProf(phaseID),
+            fetchTreemap(phaseID, similarityThreshold),
+            fetchCode(phaseID, similarityThreshold),
+            fetchProf(phaseID, similarityThreshold),
         ];
     }
     return null;
