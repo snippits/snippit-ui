@@ -1,4 +1,5 @@
 # Copyright (c) 2017, Medicine Yeh
+import os
 import anytree
 
 from collections import defaultdict
@@ -13,21 +14,19 @@ def next_id():
     return treemap_unique_id
 
 # Transform
+# Case 1 (Normal situations)
+# From : /home/medicineyeh/Projects/qemu_arm_image/matrix_mul.c:36
+# To   : ('/home/medicineyeh/Projects/qemu_arm_image', 'matrix_mul.c')
+# Case 2 (Only happens when manually specify the relative path)
 # From : /home/medicineyeh/Projects/qemu_arm_image/./matrix_mul.c:36
-# To   : ('/home/medicineyeh/Projects/qemu_arm_image/', 'matrix_mul.c')
+# To   : ('/home/medicineyeh/Projects/qemu_arm_image', 'matrix_mul.c')
+# Case 3 (Only happens when it is a library/binary that has no DWARF)
 # From : ld-linux.so.3
 # To   : ('None', 'ld-linux.so.3')
 def pathToTuple(path, prefix = None):
     name = path.split(':')[0]
-    if prefix is None:
-        home_split = name.split('/./')
-    else:
-        home_split = [prefix, path.replace(prefix, '')]
-    home = None
-    if (len(home_split) == 2):
-        home = home_split[0]
-        name = home_split[1]
-    return (home, name)
+    name = name.replace('/./', '/')
+    return os.path.split(name)
 
 def createWordCount(codes):
     word_count = defaultdict(list)
@@ -35,45 +34,39 @@ def createWordCount(codes):
         word_count[pathToTuple(code['line'])] += [code['walk']]
     return { k: sum(v) for k,v in word_count.items() }
 
-def getRootNode(root_list, work_dir):
-    root_node = list(filter(lambda node: node.name == work_dir, root_list))
-    if (len(root_node)):
-        # Found root node
-        node = root_node[0]
-    else:
-        # Default constructor
-        node = Node(work_dir, parent = None, value = 0, id = next_id())
-        root_list.append(node)
-    return node
-
 def parse(codes):
     word_count = createWordCount(codes)
 
     resolver = Resolver('name')
 
     # Resolver cannot solve a name with path, thus, a root_list is required
-    root_list = []
-    for (work_dir,rel_path),times in word_count.items():
-        work_dir = work_dir or '/unknown'
+    root_node = Node('all', parent = None, value = 0, id = next_id())
+    for (path,filename),times in word_count.items():
+        path = path or '/unknown'
+        path = path[1:] # Remove the leading slash
+        path += '/' + filename
 
-        node = getRootNode(root_list, work_dir)
-        for path in rel_path.split('/'):
+        node = root_node
+        for name in path.split('/'):
             node.value += times
             try:
-                node = resolver.get(node, path)
+                node = resolver.get(node, name)
             except anytree.resolver.ChildResolverError:
-                node = Node(path, parent = node, value = times, id = next_id())
+                node = Node(name, parent = node, value = times, id = next_id())
 
     tree_map = []
-    for root in root_list:
-        for node in anytree.PostOrderIter(root):
-            # print("/".join([n.name for n in node.path]))
-            parent_id = None if node.parent is None else str(node.parent.id)
-            tree_map += [{
-                    'id': str(node.id),
-                    'parent': parent_id,
-                    'name': node.name,
-                    'value': node.value,
-                }]
+    for node in anytree.PreOrderIter(root_node):
+        # print("/".join([n.name for n in node.path]))
+        if (node == root_node): continue
+        if (node.parent == root_node):
+            parent_id = None
+        else:
+            parent_id = str(node.parent.id)
+        tree_map += [{
+                'id': str(node.id),
+                'parent': parent_id,
+                'name': node.name,
+                'value': node.value,
+            }]
 
     return tree_map
