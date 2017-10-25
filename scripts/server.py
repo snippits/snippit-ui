@@ -19,6 +19,9 @@ import myutils.createMappingTable as createMappingTable
 import myutils.createTreeMap as createTreeMap
 import myutils.terminalColors as bcolors
 
+PHASE_CONTEXT_SWITCH = 1
+
+
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 PARENTDIR = os.path.dirname(BASE_PATH)
 
@@ -66,9 +69,13 @@ def get_phase_timeline():
     simMat = processes['default_']['similarityMatrix']
     simTh = float(requestValues['similarityThreshold']) / 100.0
 
+    # Get mapping table and remap the timeline to its new phase ID
     mappingTable = createMappingTable.nearestAbove(simMat, simTh)
     timeline = [ [kv[0], mappingTable[kv[1]]] for kv in info['timeline'] ]
-    # Use the last element as default
+    # Get the context switch points
+    breakPoints = [ [kv[0], None] for kv in info['events'] if kv[1] == PHASE_CONTEXT_SWITCH ]
+    # Merge two timeline in sorted order
+    timeline = sorted(timeline + breakPoints)
     response = app.response_class(
         response=json.dumps(timeline),
         status=200,
