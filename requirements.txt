@@ -1,0 +1,16 @@
+anytree==2.2.1
+click==6.7
+Flask==0.12.2
+Flask-HTTPAuth==3.2.3
+flask-profiler==1.5
+Flask-Script==2.0.6
+Flask-Sockets==0.2.1
+gevent==1.2.2
+gevent-websocket==0.10.1
+greenlet==0.4.12
+itsdangerous==0.24
+Jinja2==2.9.6
+MarkupSafe==1.0
+numpy==1.13.3
+six==1.11.0
+Werkzeug==0.12.2
