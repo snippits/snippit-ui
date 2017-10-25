@@ -6,3 +6,7 @@ FAIL = '\033[91m'
 ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
+
+OK_STR = '{}[Fatal]{}'.format(OKGREEN, ENDC)
+WARNING_STR = '{}[Warning]{}'.format(WARNING, ENDC)
+FATAL_STR = '{}[Fatal]{}'.format(FAIL, ENDC)

@@ -142,9 +142,13 @@ def main(argv):
 
     input_path = os.path.abspath(args.input_path)
     proc_path = os.path.join(input_path, 'proc')
+    if (os.path.exists(proc_path) == False):
+        print('{} path \'{}\' not found!'.format(bcolors.WARNING_STR, proc_path))
 
     global processes
     processes = processParser.parseAllProcesses(proc_path)
+    if (len(processes) == 0):
+        print('{} no processes found under \'{}\'!'.format(bcolors.WARNING_STR, proc_path))
 
     print(' * Server running on: {}http://{}:{}/{}'.format(
             bcolors.OKBLUE, args.host, args.port, bcolors.ENDC
