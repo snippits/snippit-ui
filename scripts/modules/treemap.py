@@ -1,17 +1,19 @@
 # Copyright (c) 2017, Medicine Yeh
+
 import os
 import anytree
 
 from collections import defaultdict
 from anytree import Node, Resolver, RenderTree
 
-treemap_unique_id = 0
+_treemap_unique_id = 0
 
-# Return a unique ID
-def next_id():
-    global treemap_unique_id
-    treemap_unique_id += 1
-    return treemap_unique_id
+
+def next_uid():
+    global _treemap_unique_id
+    _treemap_unique_id += 1
+    return _treemap_unique_id
+
 
 # Transform
 # Case 1 (Normal situations)
@@ -23,27 +25,30 @@ def next_id():
 # Case 3 (Only happens when it is a library/binary that has no DWARF)
 # From : ld-linux.so.3
 # To   : ('None', 'ld-linux.so.3')
-def pathToTuple(path, prefix = None):
+def _workingdir_split(path, prefix=None):
     name = path.split(':')[0]
     name = name.replace('/./', '/')
     return os.path.split(name)
 
-def createWordCount(codes):
+
+def build_word_count(codes):
     word_count = defaultdict(list)
     for code in codes:
-        word_count[pathToTuple(code['line'])] += [code['walk']]
-    return { k: sum(v) for k,v in word_count.items() }
+        key = _workingdir_split(code['line'])
+        word_count[key] += [code['walk']]
+    return {k: sum(v) for k, v in word_count.items()}
+
 
 def parse(codes):
-    word_count = createWordCount(codes)
+    word_count = build_word_count(codes)
 
     resolver = Resolver('name')
 
     # Resolver cannot solve a name with path, thus, a root_list is required
-    root_node = Node('all', parent = None, value = 0, id = next_id())
-    for (path,filename),times in word_count.items():
+    root_node = Node('all', parent=None, value=0, id=next_uid())
+    for (path, filename), times in word_count.items():
         path = path or '/unknown'
-        path = path[1:] # Remove the leading slash
+        path = path[1:]    # Remove the leading slash
         path += '/' + filename
 
         node = root_node
@@ -52,7 +57,7 @@ def parse(codes):
             try:
                 node = resolver.get(node, name)
             except anytree.resolver.ChildResolverError:
-                node = Node(name, parent = node, value = times, id = next_id())
+                node = Node(name, parent=node, value=times, id=next_uid())
 
     tree_map = []
     for node in anytree.PreOrderIter(root_node):
@@ -63,10 +68,10 @@ def parse(codes):
         else:
             parent_id = str(node.parent.id)
         tree_map += [{
-                'id': str(node.id),
-                'parent': parent_id,
-                'name': node.name,
-                'value': node.value,
-            }]
+            'id': str(node.id),
+            'parent': parent_id,
+            'name': node.name,
+            'value': node.value,
+        }]
 
     return tree_map

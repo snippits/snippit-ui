@@ -1,3 +1,12 @@
+# Copyright (c) 2017, Medicine Yeh
+
+from myutils import mapping_table
+
+
+def get_phase_mapping(sim_mat, sim_thold=1.0):
+    return mapping_table.nearest_above(sim_mat, sim_thold)
+
+
 def deepupdate(target, src):
     for k, v in src.items():
         if isinstance(v, list):
