@@ -1,5 +1,58 @@
-public/output/*
-node_modules
+# Deprecated output folder
+/public/output/*
+
+# Directories
+/node_modules/
+/data/
+/docs/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# dotenv environment variables file
+.env
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Specific Files
 package-lock.json
-__pycache__
+settings.json
+config.json
+config.js
+tagsbot.sqlite
 flask_profiler.sql
+
+# Byte-compiled / optimized / DLL files
+__pycache__
+
+# C extensions
+*.so
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Virtualenv
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+pyvenv.cfg
+.venv
+pip-selfcheck.json
+
+# Demo folders
+/demo*
