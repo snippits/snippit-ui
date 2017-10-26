@@ -2,6 +2,7 @@
 
 import json
 import copy
+from functools import lru_cache
 
 from myutils import utils
 
@@ -33,6 +34,7 @@ def merge_phase_to(target_p, source_p):
     return target_p
 
 
+@lru_cache(maxsize=32)
 def remap(phases, mapping_table):
     # Make a copy for the output
     phases_ret = copy.deepcopy(phases)

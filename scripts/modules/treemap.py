@@ -2,6 +2,7 @@
 
 import os
 import anytree
+from functools import lru_cache
 
 from collections import defaultdict
 from anytree import Node, Resolver, RenderTree
@@ -39,6 +40,7 @@ def build_word_count(codes):
     return {k: sum(v) for k, v in word_count.items()}
 
 
+@lru_cache(maxsize=32)
 def parse(codes):
     word_count = build_word_count(codes)
 

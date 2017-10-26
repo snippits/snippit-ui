@@ -4,11 +4,16 @@ import os
 import sys
 import json
 
+import numpy as np
+
+from myutils.utils import CustomJSONDecoder
+from myutils.utils import Hashable
+
 
 def load_phase(path):
     phase_path = path + '/phases'
     with open(phase_path) as json_data:
-        return json.load(json_data)
+        return json.load(json_data, cls=CustomJSONDecoder, list_type=Hashable)
     return {}
 
 
@@ -26,7 +31,7 @@ def load(proc_path):
         print('Found process \'{}\''.format(phase_path))
         ret_dict[str(dirname)] = {
             'info': load_phase(phase_path),
-            'similarityMatrix': load_similarity_matrix(phase_path),
+            'similarityMatrix': Hashable(np.asarray(load_similarity_matrix(phase_path))),
         }
         ret_dict['default_'] = ret_dict[str(dirname)]    # remember the last inserted one as default
     return ret_dict
