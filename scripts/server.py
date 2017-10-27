@@ -85,6 +85,11 @@ def get_params(proc_id=None):
     return (info, sim_mat)
 
 
+def set_response_for_json(request):
+    request.setHeader('Content-Type', 'application/json')
+    request.setHeader('Cache-Control', 'no-store')
+
+
 @app.route("/", branch=True)
 def static_file(request):
     request.setHeader('Cache-Control', 'no-cache')
@@ -113,8 +118,7 @@ def get_phase_timeline(request):
     ]
 
     timeline_ret = utils.apply_middleware(middlewares, info['timeline'])
-    request.setHeader('Content-Type', 'application/json')
-    request.setHeader('Cache-Control', 'no-store')
+    set_response_for_json(request)
     return json.dumps(timeline_ret)
 
 
@@ -133,8 +137,7 @@ def get_phase_treemap(request, phase_id):
     ]
 
     treemap_ret = utils.apply_middleware(middlewares, info['phase'])
-    request.setHeader('Content-Type', 'application/json')
-    request.setHeader('Cache-Control', 'no-store')
+    set_response_for_json(request)
     return json.dumps(treemap_ret)
 
 
@@ -152,8 +155,7 @@ def get_phase_prof(request, phase_id):
     ]
 
     counters = utils.apply_middleware(middlewares, info['phase'])
-    request.setHeader('Content-Type', 'application/json')
-    request.setHeader('Cache-Control', 'no-store')
+    set_response_for_json(request)
     return json.dumps(counters)
 
 
@@ -171,8 +173,7 @@ def get_phase_code(request, phase_id):
     ]
 
     codes = utils.apply_middleware(middlewares, info['phase'])
-    request.setHeader('Content-Type', 'application/json')
-    request.setHeader('Cache-Control', 'no-store')
+    set_response_for_json(request)
     return json.dumps(codes)
 
 
