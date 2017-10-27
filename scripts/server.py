@@ -27,6 +27,7 @@ from modules import code
 # Other utilities of this project
 from myutils import bcolors
 from myutils import utils
+from myutils.decorators import timed
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 PARENTDIR = os.path.dirname(BASE_PATH)
@@ -84,6 +85,7 @@ def static_file(path):
 
 
 @app.route('/phase/timeline', methods=['POST'])
+@timed
 def get_phase_timeline():
     info = processes['default_']['info']
     (sim_mat, sim_thold) = get_similarity_params(flask.request)
@@ -102,6 +104,7 @@ def get_phase_timeline():
 
 
 @app.route('/phase/<int:phase_id>/treemap', methods=['POST'])
+@timed
 def get_phase_treemap(phase_id):
     info = processes['default_']['info']
     (sim_mat, sim_thold) = get_similarity_params(flask.request)
@@ -118,6 +121,7 @@ def get_phase_treemap(phase_id):
 
 
 @app.route('/phase/<int:phase_id>/prof', methods=['POST'])
+@timed
 def get_phase_prof(phase_id):
     info = processes['default_']['info']
     (sim_mat, sim_thold) = get_similarity_params(flask.request)
@@ -133,6 +137,7 @@ def get_phase_prof(phase_id):
 
 
 @app.route('/phase/<int:phase_id>/codes', methods=['POST'])
+@timed
 def get_phase_code(phase_id):
     info = processes['default_']['info']
     (sim_mat, sim_thold) = get_similarity_params(flask.request)
