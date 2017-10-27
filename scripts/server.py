@@ -66,13 +66,23 @@ def klein_args_get(request, key, default=None):
     return ret
 
 
-def get_params(request):
+def get_args(request):
     sim_thold = klein_args_get(request, 'similarityThreshold')
 
     if sim_thold is not None:
         sim_thold = float(sim_thold) / 100.0
 
     return (sim_thold)
+
+
+def get_params(proc_id=None):
+    if proc_id is not None:
+        info = processes[proc_id]['info']
+        sim_mat = processes[proc_id]['similarityMatrix']
+    else:
+        info = processes['default_']['info']
+        sim_mat = processes['default_']['similarityMatrix']
+    return (info, sim_mat)
 
 
 @app.route("/", branch=True)
@@ -90,9 +100,8 @@ def index(request):
 @app.route('/phase/timeline', methods=['POST', 'GET'])
 @timed
 def get_phase_timeline(request):
-    info = processes['default_']['info']
-    sim_mat = processes['default_']['similarityMatrix']
-    (sim_thold) = get_params(request)
+    (info, sim_mat) = get_params()
+    (sim_thold) = get_args(request)
     # Get mapping table for remapping the timeline to its new phase ID
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
 
@@ -112,9 +121,8 @@ def get_phase_timeline(request):
 @app.route('/phase/<int:phase_id>/treemap', methods=['POST'])
 @timed
 def get_phase_treemap(request, phase_id):
-    info = processes['default_']['info']
-    sim_mat = processes['default_']['similarityMatrix']
-    (sim_thold) = get_params(request)
+    (info, sim_mat) = get_params()
+    (sim_thold) = get_args(request)
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
 
@@ -133,9 +141,8 @@ def get_phase_treemap(request, phase_id):
 @app.route('/phase/<int:phase_id>/prof', methods=['POST'])
 @timed
 def get_phase_prof(request, phase_id):
-    info = processes['default_']['info']
-    sim_mat = processes['default_']['similarityMatrix']
-    (sim_thold) = get_params(request)
+    (info, sim_mat) = get_params()
+    (sim_thold) = get_args(request)
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
 
@@ -153,9 +160,8 @@ def get_phase_prof(request, phase_id):
 @app.route('/phase/<int:phase_id>/codes', methods=['POST'])
 @timed
 def get_phase_code(request, phase_id):
-    info = processes['default_']['info']
-    sim_mat = processes['default_']['similarityMatrix']
-    (sim_thold) = get_params(request)
+    (info, sim_mat) = get_params()
+    (sim_thold) = get_args(request)
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
 
