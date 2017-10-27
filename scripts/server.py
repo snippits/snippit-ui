@@ -8,12 +8,15 @@ import glob
 import json
 import time
 import textwrap
+import logging
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
 # Third party
 import flask
 import flask_profiler
+import logzero
+from logzero import logger
 
 # Modules for this project
 from modules import snippit
@@ -203,11 +206,17 @@ def main(argv):
 
     print(' * Server running on: {}http://{}:{}/{}'.format(bcolors.OKBLUE, args.host, args.port,
                                                            bcolors.ENDC))
+
+    # Set a minimum log level
+    logzero.loglevel(logging.INFO)
     if (app.config['DEBUG']):
         print(' * Profiling results on: {}http://{}:{}/flask-profiler/{}'.format(
             bcolors.OKBLUE, args.host, args.port, bcolors.ENDC))
         auth = app.config['flask_profiler']['basicAuth']
         print('       username: {}    password: {}'.format(auth['username'], auth['password']))
+        logzero.loglevel(logging.DEBUG)
+
+    if (app.config['DEBUG']):
         app.run(host=args.host, port=args.port, use_debugger=True, use_reloader=True)
     else:
         app.run(host=args.host, port=args.port)
