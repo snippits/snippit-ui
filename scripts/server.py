@@ -11,6 +11,7 @@ import textwrap
 import logging
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
+from functools import partial
 
 # Third party
 import flask
@@ -89,15 +90,17 @@ def static_file(path):
 def get_phase_timeline():
     info = processes['default_']['info']
     (sim_mat, sim_thold) = get_similarity_params(flask.request)
-
-    # Get mapping table and remap the timeline to its new phase ID
+    # Get mapping table for remapping the timeline to its new phase ID
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
-    timeline_ret = timeline.remap(info['timeline'], mapping_table)
-    # Get the context switch points
-    cs_list = timeline.get_event_time_list(info['events'])
-    # Merge two timeline in sorted order
-    timeline_ret = sorted(timeline_ret + cs_list)
 
+    from modules.timeline import Event
+    middlewares = [
+        partial(timeline.remap, mapping_table=mapping_table),
+        partial(timeline.append_event, event_list=info['events'], event=Event.CONTEXT_SWITCH),
+        partial(sorted),
+    ]
+
+    timeline_ret = utils.apply_middleware(middlewares, info['timeline'])
     response = app.response_class(
         response=json.dumps(timeline_ret), status=200, mimetype='application/json')
     return response
@@ -108,13 +111,16 @@ def get_phase_timeline():
 def get_phase_treemap(phase_id):
     info = processes['default_']['info']
     (sim_mat, sim_thold) = get_similarity_params(flask.request)
-
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
-    phase_list = phase.remap(info['phase'], mapping_table)
 
-    codes = phase_list[phase_id]['codes']
-    treemap_ret = treemap.parse(codes)
+    middlewares = [
+        partial(phase.remap, mapping_table=mapping_table),
+        partial(lambda phase_list: phase_list[phase_id]['codes']),
+        partial(treemap.parse),
+    ]
+
+    treemap_ret = utils.apply_middleware(middlewares, info['phase'])
     response = app.response_class(
         response=json.dumps(treemap_ret), status=200, mimetype='application/json')
     return response
@@ -125,12 +131,15 @@ def get_phase_treemap(phase_id):
 def get_phase_prof(phase_id):
     info = processes['default_']['info']
     (sim_mat, sim_thold) = get_similarity_params(flask.request)
-
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
-    phase_list = phase.remap(info['phase'], mapping_table)
 
-    counters = phase_list[phase_id]['counters']
+    middlewares = [
+        partial(phase.remap, mapping_table=mapping_table),
+        partial(lambda phase_list: phase_list[phase_id]['counters']),
+    ]
+
+    counters = utils.apply_middleware(middlewares, info['phase'])
     response = app.response_class(
         response=json.dumps(counters), status=200, mimetype='application/json')
     return response
@@ -141,12 +150,15 @@ def get_phase_prof(phase_id):
 def get_phase_code(phase_id):
     info = processes['default_']['info']
     (sim_mat, sim_thold) = get_similarity_params(flask.request)
-
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
-    phase_list = phase.remap(info['phase'], mapping_table)
 
-    codes = phase_list[phase_id]['codes']
+    middlewares = [
+        partial(phase.remap, mapping_table=mapping_table),
+        partial(lambda phase_list: phase_list[phase_id]['codes']),
+    ]
+
+    codes = utils.apply_middleware(middlewares, info['phase'])
     response = app.response_class(
         response=json.dumps(codes), status=200, mimetype='application/json')
     return response

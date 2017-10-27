@@ -1,8 +1,13 @@
 # Copyright (c) 2017, Medicine Yeh
 
+import logging
 import json
 from functools import lru_cache
 
+# Third party
+from logzero import logger
+
+# Modules for this project
 from myutils import mapping_table
 
 
@@ -28,6 +33,17 @@ class CustomJSONDecoder(json.JSONDecoder):
 @lru_cache(maxsize=32)
 def get_phase_mapping(sim_mat, sim_thold=1.0):
     return Hashable(mapping_table.nearest_above(sim_mat, sim_thold))
+
+
+def apply_middleware(middlewares, value):
+    ret = value
+    for foo in middlewares:
+        logger.debug('Apply %s', foo.func.__name__)
+        if callable(getattr(foo.func, 'cache_info', None)):
+            logger.debug('\t%s', foo.func.cache_info())
+
+        ret = foo(ret)
+    return ret
 
 
 def deepupdate(target, src):
