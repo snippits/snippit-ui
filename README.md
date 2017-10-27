@@ -2,7 +2,15 @@
 The user interface of Snippit project.
 ![Image of Snippit](/images/snippit.png?raw=true "Sample Image")
 
+The server is implemented with [Klein + Twisted](https://github.com/twisted/klein) for the best performance.
+
 This repo is still under development, feel free to send a bug report.
+
+# Requirements
+```
+pip3 install klein numpy anytree logzero
+```
+You can also use `pip install -r ./requirements.txt` for fixed package version
 
 # Usage
 1. Open the server to load your Snippits output. `./script/server.py` (Default: /tmp/snippits)
@@ -14,26 +22,9 @@ This repo is still under development, feel free to send a bug report.
 * The current version does not search for file, it uses the absolute path to locate the file.
 You must compile the binary on your machine in order to make code mapping work.
 
-# Development Mode of source code
-```
-npm install
-npm run watch
-```
+# Development Mode
+1. Install the packages of web UI by `npm install`.
+2. Run command `npm run watch` for online builds of source codes.
 
-# Running the server (Flask)
-Install all the dependencies
-```
-pip3 install flask flask-script Flask-Sockets flask_profiler numpy anytree
-```
-Run it by `./script/server.py`
-
-# Custom Server Config (Flask)
-1. Prepare a file with configs, named `settings.cfg`.
-2. export SNIPPIT_UI_CONFIG=/path/to/settings.cfg
-3. Run `./script/server.py` as usual.
-
-## Example configuration
-```
-DEBUG = False
-SECRET_KEY = '?\xbf,\xb4\x8d\xa3"<\x9c\xb0@\x0f5\xab,w\xee\x8d$0\x13\x8b83'
-```
+## Running the server with debug mode
+`DEBUG=1 ./script/server.py`
