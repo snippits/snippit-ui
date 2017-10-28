@@ -6,6 +6,7 @@ import json
 
 import numpy as np
 
+from modules import code
 from myutils.utils import CustomJSONDecoder
 from myutils.utils import Hashable
 
@@ -33,5 +34,10 @@ def load(proc_path):
             'info': load_phase(phase_path),
             'similarityMatrix': Hashable(np.asarray(load_similarity_matrix(phase_path))),
         }
-        ret_dict['default_'] = ret_dict[str(dirname)]    # remember the last inserted one as default
+        process = ret_dict[str(dirname)]
+        if process['info']:
+            code.resolve_path(process['info']['phase'])
+            file_list = code.parse_file_list(process['info']['phase'])
+            process['workDirs'] = code.locate_working_directory(file_list)
+        ret_dict['default_'] = process    # remember the last inserted one as default
     return ret_dict
