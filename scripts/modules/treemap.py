@@ -64,8 +64,8 @@ def parse(codes):
     tree_map = []
     for node in anytree.PreOrderIter(root_node):
         # print("/".join([n.name for n in node.path]))
-        if (node == root_node): continue
-        if (node.parent == root_node):
+        if node == root_node: continue
+        if node.parent == root_node:
             parent_id = None
         else:
             parent_id = str(node.parent.id)

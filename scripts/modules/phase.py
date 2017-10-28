@@ -16,7 +16,7 @@ def _fix_counter_value(o):
     c = o['cache']['iCache']
     c['missRate'] = (c['readMiss'] + c['writeMiss']) / c['accessCount']
     c = o['cache']['level2']
-    if (c):
+    if c:
         c['missRate'] = (c['readMiss'] + c['writeMiss']) / c['accessCount']
 
 
