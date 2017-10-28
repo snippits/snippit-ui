@@ -18,11 +18,24 @@ def load_phase(path):
     return {}
 
 
+def load_timeline(path):
+    phase_path = path + '/timeline'
+    with open(phase_path) as json_data:
+        return json.load(json_data, cls=CustomJSONDecoder, list_type=Hashable)
+    return {}
+
+
 def load_similarity_matrix(path):
     phase_path = path + '/phase_similarity_matrix'
     with open(phase_path) as json_data:
         return json.load(json_data)
     return {}
+
+
+def _mask_zero(kv):
+    if kv[1]:
+        return kv
+    return [kv[0], None]
 
 
 def load(proc_path):
@@ -32,6 +45,7 @@ def load(proc_path):
         print('Found process \'{}\''.format(phase_path))
         ret_dict[str(dirname)] = {
             'info': load_phase(phase_path),
+            'timeline': load_timeline(phase_path),
             'similarityMatrix': Hashable(np.asarray(load_similarity_matrix(phase_path))),
         }
         process = ret_dict[str(dirname)]
@@ -39,5 +53,8 @@ def load(proc_path):
             code.resolve_path(process['info']['phase'])
             file_list = code.parse_file_list(process['info']['phase'])
             process['workDirs'] = code.locate_working_directory(file_list)
+        if process['timeline']:
+            timeline = process['timeline']['timeline']
+            process['timeline']['timeline'] = Hashable(map(_mask_zero, timeline))
         ret_dict['default_'] = process    # remember the last inserted one as default
     return ret_dict

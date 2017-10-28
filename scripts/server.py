@@ -78,11 +78,13 @@ def get_args(request):
 def get_params(proc_id=None):
     if proc_id is not None:
         info = processes[proc_id]['info']
+        process_timeline = processes[proc_id]['timeline']
         sim_mat = processes[proc_id]['similarityMatrix']
     else:
         info = processes['default_']['info']
+        process_timeline = processes['default_']['timeline']
         sim_mat = processes['default_']['similarityMatrix']
-    return (info, sim_mat)
+    return (info, process_timeline, sim_mat)
 
 
 def set_response_for_json(request):
@@ -105,7 +107,7 @@ def index(request):
 @app.route('/phase/timeline', methods=['POST', 'GET'])
 @timed
 def get_phase_timeline(request):
-    (info, sim_mat) = get_params()
+    (info, process_timeline, sim_mat) = get_params()
     (sim_thold) = get_args(request)
     # Get mapping table for remapping the timeline to its new phase ID
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
@@ -113,11 +115,11 @@ def get_phase_timeline(request):
     from modules.timeline import Event
     middlewares = [
         partial(timeline.remap, mapping_table=mapping_table),
-        partial(timeline.append_event, event_list=info['events'], event=Event.CONTEXT_SWITCH),
-        partial(sorted),
+    #partial(timeline.append_event, event_list=info['events'], event=Event.CONTEXT_SWITCH),
+    #partial(sorted),
     ]
 
-    timeline_ret = utils.apply_middleware(middlewares, info['timeline'])
+    timeline_ret = utils.apply_middleware(middlewares, process_timeline['timeline'])
     set_response_for_json(request)
     return json.dumps(timeline_ret)
 
@@ -125,7 +127,7 @@ def get_phase_timeline(request):
 @app.route('/phase/<int:phase_id>/treemap', methods=['POST'])
 @timed
 def get_phase_treemap(request, phase_id):
-    (info, sim_mat) = get_params()
+    (info, process_timeline, sim_mat) = get_params()
     (sim_thold) = get_args(request)
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
@@ -144,7 +146,7 @@ def get_phase_treemap(request, phase_id):
 @app.route('/phase/<int:phase_id>/prof', methods=['POST'])
 @timed
 def get_phase_prof(request, phase_id):
-    (info, sim_mat) = get_params()
+    (info, process_timeline, sim_mat) = get_params()
     (sim_thold) = get_args(request)
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
@@ -162,7 +164,7 @@ def get_phase_prof(request, phase_id):
 @app.route('/phase/<int:phase_id>/codes', methods=['POST'])
 @timed
 def get_phase_code(request, phase_id):
-    (info, sim_mat) = get_params()
+    (info, process_timeline, sim_mat) = get_params()
     (sim_thold) = get_args(request)
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)

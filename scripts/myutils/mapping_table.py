@@ -18,12 +18,13 @@ def np_nearest_above(sim_mat, sim_thold=1.0):
     num_phases = len(sim_mat)
     # Restrict the range to (0, 1)
     if sim_thold == 1.0: return list(range(len(sim_mat)))
-    if sim_thold == 0.0: return [0] * len(sim_mat)
+    if sim_thold == 0.0: return [1] * len(sim_mat)
 
     # Get lower triangle with diagonal
     m = np.tril(sim_mat)
     # Find the nearest value above the threshold
     mapping = np.ma.masked_array(m, mask=m < float(sim_thold)).argmin(axis=1)
+    mapping[0] = 1    # Force phase ID zero would never be used
 
     # Create identical mapping first
     table = list(range(len(mapping)))
@@ -34,10 +35,11 @@ def np_earliest_match(sim_mat, sim_thold=1.0):
     num_phases = len(sim_mat)
     # Restrict the range to (0, 1)
     if sim_thold == 1.0: return list(range(len(sim_mat)))
-    if sim_thold == 0.0: return [0] * len(sim_mat)
+    if sim_thold == 0.0: return [1] * len(sim_mat)
 
     # Find the first match above the threshold
     mapping = np.argmax(np.array(sim_mat) >= float(sim_thold), axis=1)
+    mapping[0] = 1    # Force phase ID zero would never be used
 
     # Create identical mapping first
     table = list(range(len(mapping)))
@@ -48,7 +50,7 @@ def nearest_above(sim_mat, sim_thold=1.0):
     num_phases = len(sim_mat)
     # Restrict the range to (0, 1)
     if sim_thold == 1.0: return list(range(len(sim_mat)))
-    if sim_thold == 0.0: return [0] * len(sim_mat)
+    if sim_thold == 0.0: return [1] * len(sim_mat)
 
     # Create identical mapping first
     mappingTable = list(range(num_phases))
@@ -61,6 +63,7 @@ def nearest_above(sim_mat, sim_thold=1.0):
                 matched_v = sim_mat[i][j]
                 break
         mappingTable[i] = mappingTable[matched_i]
+    mappingTable[0] = 1    # Force phase ID zero would never be used
     return mappingTable
 
 
@@ -68,7 +71,7 @@ def earliest_match(sim_mat, sim_thold=1.0):
     num_phases = len(sim_mat)
     # Restrict the range to (0, 1)
     if sim_thold == 1.0: return list(range(len(sim_mat)))
-    if sim_thold == 0.0: return [0] * len(sim_mat)
+    if sim_thold == 0.0: return [1] * len(sim_mat)
 
     # Create identical mapping first
     mappingTable = list(range(num_phases))
@@ -77,6 +80,7 @@ def earliest_match(sim_mat, sim_thold=1.0):
             if sim_mat[i][j] >= sim_thold:
                 mappingTable[i] = mappingTable[j]
                 break
+    mappingTable[0] = 1    # Force phase ID zero would never be used
     return mappingTable
 
 

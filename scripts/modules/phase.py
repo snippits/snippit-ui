@@ -40,6 +40,7 @@ def remap(phases, mapping_table):
     phases_ret = copy.deepcopy(phases)
     # Loop through all phases and update itself to its target phase
     for source_p in phases_ret:
+        if source_p['id'] == 0: continue    # Skip the zeroth phase
         target_id = mapping_table[source_p['id']]
         merge_phase_to(phases_ret[target_id], source_p)
 

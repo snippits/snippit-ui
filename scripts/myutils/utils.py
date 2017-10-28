@@ -1,5 +1,6 @@
 # Copyright (c) 2017, Medicine Yeh
 
+import copy
 import logging
 import json
 from functools import lru_cache
@@ -63,5 +64,7 @@ def deepupdate(target, src):
                 target[k] = v.copy()
             else:
                 target[k].update(v.copy())
-        else:
+        elif v is not None:
             target[k] += v
+        else:
+            target[k] = copy.copy(v)
