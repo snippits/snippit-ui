@@ -27,7 +27,8 @@ def next_uid():
 # From : ld-linux.so.3
 # To   : ('None', 'ld-linux.so.3')
 def _workingdir_split(path, prefix=None):
-    name = path.split(':')[0]
+    # ':'.join()... is designed to remove string only after the last matching ':'
+    name = ':'.join(path.split(':')[:-1])
     name = name.replace('/./', '/')
     return os.path.split(name)
 
