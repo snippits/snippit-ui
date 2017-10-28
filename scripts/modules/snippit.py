@@ -27,7 +27,7 @@ def load_similarity_matrix(path):
 
 def load(proc_path):
     ret_dict = {}
-    for dirname in os.listdir(proc_path):
+    for dirname in sorted(os.listdir(proc_path)):
         phase_path = os.path.join(proc_path, dirname)
         print('Found process \'{}\''.format(phase_path))
         ret_dict[str(dirname)] = {
