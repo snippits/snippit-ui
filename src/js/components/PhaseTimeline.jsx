@@ -24,14 +24,14 @@ const defaultOptions = {
     },
     rangeSelector: {
         allButtonsEnabled: true,
-        selected: 4,
+        selected: 5,
         buttons: [{
             type: 'millisecond',
-            count: 2000,
+            count: 20,
             text: 'ms',
         }, {
             type: 'second',
-            count: 10,
+            count: 5,
             text: '1s',
         }, {
             type: 'minute',
