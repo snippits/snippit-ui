@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // TODO: Add Cancellation in case of long latency
-export function fetchTimeline(similarityThreshold = 100) {
+export function fetchTimeline(similarityThreshold = 100, perspective = 'host') {
     let link = 'phase/timeline';
 
     console.log(link);
@@ -9,6 +9,7 @@ export function fetchTimeline(similarityThreshold = 100) {
         dispatch({type: 'FETCH_TIMELINE'});
         axios.post(link, {
             similarityThreshold: similarityThreshold,
+            timePerspective: perspective,
         }).then((response) => {
             dispatch({
                 type: 'FETCH_TIMELINE_FULFILLED',

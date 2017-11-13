@@ -108,10 +108,12 @@ export default class PhaseTimeline extends React.Component {
         this.config = {};
         this.state = {
             similarityThreshold: 0,
+            timePerspective: 'host',
         };
 
         // This binding is necessary to make `this` work in the callback
         this.handleSliderChange = this.handleSliderChange.bind(this);
+        this.handlePerspectiveChange = this.handlePerspectiveChange.bind(this);
     }
 
     // When the DOM is ready, create the chart.
@@ -132,7 +134,7 @@ export default class PhaseTimeline extends React.Component {
         // Set initial value if it's not assigned
         let similarityThreshold = this.props.similarityThreshold;
         this.setState({similarityThreshold: similarityThreshold});
-        this.props.dispatch(fetchTimeline(similarityThreshold));
+        this.props.dispatch(fetchTimeline(similarityThreshold, this.state.timePerspective));
     }
 
     selectEvent(event) {
@@ -147,7 +149,12 @@ export default class PhaseTimeline extends React.Component {
 
     handleSliderChange(value) {
         this.setState({similarityThreshold: value});
-        this.props.dispatch(fetchTimeline(value));
+        this.props.dispatch(fetchTimeline(value, this.state.timePerspective));
+    }
+
+    handlePerspectiveChange(e) {
+        this.setState({timePerspective: e.target.value});
+        this.props.dispatch(fetchTimeline(this.state.similarityThreshold, e.target.value));
     }
 
     render() {
@@ -168,9 +175,16 @@ export default class PhaseTimeline extends React.Component {
 
         return (
             <div className='col-md-12'>
-                <SimilaritySlider
-                    onChange={this.handleSliderChange}
-                    value={this.state.similarityThreshold} />
+                <div className='col-md-3'>
+                    <SimilaritySlider
+                        onChange={this.handleSliderChange}
+                        value={this.state.similarityThreshold} />
+                </div>
+                <div className='col-md-2'>
+                    <input type='button' className='btn' value='host' onClick={this.handlePerspectiveChange}/>
+                    <span>    </span>
+                    <input type='button' className='btn' value='guest' onClick={this.handlePerspectiveChange}/>
+                </div>
                 <ReactHighstock
                     config={this.config}
                     isPureConfig={true}
