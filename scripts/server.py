@@ -56,23 +56,25 @@ if os.environ.get('DEBUG'):
     logzero.loglevel(logging.DEBUG)
 
 
-def klein_args_get(request, key, default=None):
-    ret = None
-    if request.method.decode() == 'POST':
-        args = json.loads(request.content.read())
-        ret = args.get(key, default)
-    elif request.method.decode() == 'GET':
-        ret = request.args.get(byte(key), [default])[0]
-    return ret
-
-
 def get_args(request):
-    sim_thold = klein_args_get(request, 'similarityThreshold')
-
-    if sim_thold is not None:
-        sim_thold = float(sim_thold) / 100.0
-
-    return (sim_thold)
+    if request.method.decode() == 'POST':
+        ret = json.loads(request.content.read())
+    elif request.method.decode() == 'GET':
+        ret = {}
+        for kv in request.args:
+            # Solve the issue of encoding
+            value = request.args[kv][0].decode('utf-8')
+            try:
+                ret[kv.decode('utf-8')] = float(value)
+            except ValueError:
+                ret[kv.decode('utf-8')] = value
+            # Translate to json object
+            ret = json.loads(json.dumps(ret))
+    try:
+        ret['similarityThreshold'] = float(ret['similarityThreshold']) / 100
+    except KeyError:
+        pass
+    return ret
 
 
 def get_params(proc_id=None):
@@ -108,9 +110,9 @@ def index(request):
 @timed
 def get_phase_timeline(request):
     (info, process_timeline, sim_mat) = get_params()
-    (sim_thold) = get_args(request)
+    argv = get_args(request)
     # Get mapping table for remapping the timeline to its new phase ID
-    mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
+    mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
 
     from modules.timeline import Event
     middlewares = [
@@ -118,8 +120,10 @@ def get_phase_timeline(request):
     #partial(timeline.append_event, event_list=info['events'], event=Event.CONTEXT_SWITCH),
     #partial(sorted),
     ]
-
-    timeline_ret = utils.apply_middleware(middlewares, process_timeline['timeline'])
+    perspective = argv.get('timePerspective')
+    if perspective != 'guest':
+        perspective = 'host'
+    timeline_ret = utils.apply_middleware(middlewares, process_timeline[perspective])
     set_response_for_json(request)
     return json.dumps(timeline_ret)
 
@@ -128,9 +132,9 @@ def get_phase_timeline(request):
 @timed
 def get_phase_treemap(request, phase_id):
     (info, process_timeline, sim_mat) = get_params()
-    (sim_thold) = get_args(request)
+    argv = get_args(request)
     # Create new phase list according to the inputs
-    mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
+    mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
 
     middlewares = [
         partial(phase.remap, mapping_table=mapping_table),
@@ -147,9 +151,9 @@ def get_phase_treemap(request, phase_id):
 @timed
 def get_phase_prof(request, phase_id):
     (info, process_timeline, sim_mat) = get_params()
-    (sim_thold) = get_args(request)
+    argv = get_args(request)
     # Create new phase list according to the inputs
-    mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
+    mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
 
     middlewares = [
         partial(phase.remap, mapping_table=mapping_table),
@@ -165,9 +169,9 @@ def get_phase_prof(request, phase_id):
 @timed
 def get_phase_code(request, phase_id):
     (info, process_timeline, sim_mat) = get_params()
-    (sim_thold) = get_args(request)
+    argv = get_args(request)
     # Create new phase list according to the inputs
-    mapping_table = utils.get_phase_mapping(sim_mat, sim_thold)
+    mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
 
     middlewares = [
         partial(phase.remap, mapping_table=mapping_table),
