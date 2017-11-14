@@ -59,5 +59,6 @@ def load(proc_path):
         if process['timeline']:
             process['timeline']['host'] = Hashable(map(_mask_zero, process['timeline']['host']))
             process['timeline']['guest'] = Hashable(map(_mask_zero, process['timeline']['guest']))
-        ret_dict['default_'] = process    # remember the last inserted one as default
+        if ret_dict.get('default_') is None:
+            ret_dict['default_'] = process    # remember the last inserted one as default
     return ret_dict
