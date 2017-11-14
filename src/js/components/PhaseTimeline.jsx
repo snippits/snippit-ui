@@ -21,6 +21,7 @@ const defaultOptions = {
                 duration: 2000,
             },
             allowPointSelect: true,
+            step: true,
         },
     },
     rangeSelector: {
