@@ -203,7 +203,7 @@ export default class PhaseTimeline extends React.Component {
             if (timeline.data[0].length == 2) {
                 // If the size of first element is 2 means it's a 1-D timeline
                 chart.series[0].setData(timeline.data);
-                console.log(timeline.data);
+
                 if (appState.selectedProcess == '') {
                     chart.series[0].name = appInfo.processes[0];
                 } else {

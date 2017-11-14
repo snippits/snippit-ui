@@ -113,7 +113,6 @@ def query_info(request):
     argv = get_args(request)
     ret = ''
     if argv.get('query') == 'processes':
-        print(argv)
         pids = list(processes.keys())
         pids.remove('default_')
 
