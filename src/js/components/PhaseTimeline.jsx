@@ -189,7 +189,12 @@ export default class PhaseTimeline extends React.Component {
             chart.showLoading('Loading data from server...');
         } else if (timeline.fetched) {
             let chart = this.chart.getChart();
-            chart.series[0].setData(timeline.data);
+            if (timeline.data[0].length == 2) {
+                chart.series[0].setData(timeline.data);
+            } else {
+                // The data contains multiple series
+                chart.series[0].setData(timeline.data[0]);
+            }
             chart.hideLoading();
         }
 
@@ -211,6 +216,7 @@ export default class PhaseTimeline extends React.Component {
                             {appInfo.processes.map((pid, i) =>
                                 <option key={pid} value={pid}>{pid}</option>
                             )}
+                            <option key='all' value='all'>all</option>
                         </select>
                     </div>
                 </div>

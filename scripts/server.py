@@ -149,6 +149,29 @@ def get_phase_timeline(request, process_id):
     set_response_for_json(request)
     return json.dumps(timeline_ret)
 
+@app.route('/process/all/phase/timeline')
+@timed
+def get_phase_timeline_all(request):
+    argv = get_args(request)
+    perspective = argv.get('timePerspective')
+    if perspective != 'guest':
+        perspective = 'host'
+
+    timeline_ret = []
+    for pid, proc in processes.items():
+        if pid == 'default_': continue  # Skip this one
+        info = proc['info']
+        sim_mat = proc['similarityMatrix']
+        # Get mapping table for remapping the timeline to its new phase ID
+        mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
+
+        middlewares = [
+            partial(timeline.remap, mapping_table=mapping_table),
+        ]
+        timeline_ret += [utils.apply_middleware(middlewares, proc['timeline'][perspective])]
+    set_response_for_json(request)
+    return json.dumps(timeline_ret)
+
 @app.route('/phase/<int:phase_id>/treemap', defaults={'process_id': None})
 @app.route('/process/<int:process_id>/phase/<int:phase_id>/treemap')
 @timed
