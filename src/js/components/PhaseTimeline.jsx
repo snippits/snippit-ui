@@ -124,16 +124,11 @@ export default class PhaseTimeline extends React.Component {
     componentWillMount() {
         this.config = JSON.parse(JSON.stringify(defaultOptions));
 
-        // Push a new series of our default config with deep copy
-        let newSeries = JSON.parse(JSON.stringify(defaultSeries));
-        // Change marker line color (not series line color)
-        newSeries.marker.lineColor = '#FFFFFF';
-        // Assign data to the first series
-        newSeries.data = [];
-        // Assign mouse event to the first series
-        newSeries.point.events.select = this.selectEvent.bind(this);
         // Assign inital value of data series
-        this.config.series.push(newSeries);
+        // TODO This is not that good
+        for (let i = 0; i < 16; i++) {
+            this.config.series.push(this.createSeries());
+        }
 
         // Set initial value if it's not assigned
         let similarityThreshold = this.props.similarityThreshold;
@@ -143,22 +138,36 @@ export default class PhaseTimeline extends React.Component {
         this.props.dispatch(fetchTimeline(similarityThreshold, this.state.timePerspective));
     }
 
+    createSeries() {
+        // Push a new series of our default config with deep copy
+        const newSeries = JSON.parse(JSON.stringify(defaultSeries));
+        // Assign data to the first series
+        newSeries.data = [];
+        // Assign mouse event to the first series
+        newSeries.point.events.select = this.selectEvent.bind(this);
+
+        return newSeries;
+    }
+
     selectEvent(event) {
-        let selectedItem = event.target['y'];
-        // console.log(selectedItem)
-        if (selectedItem !== undefined) {
-            this.props.dispatch(getPerfs(selectedItem, this.state.similarityThreshold));
+        const selectedItem = event.target['y'];
+        const selectedProcessID = parseInt(event.target.series.name) || null;
+
+        if (selectedItem && selectedProcessID) {
+            this.props.dispatch(getPerfs(selectedItem, this.state.similarityThreshold, selectedProcessID));
             return true;
         }
         return false;
     }
 
     handleSliderChange(value) {
+        const {appState} = this.props;
         this.setState({similarityThreshold: value});
-        this.props.dispatch(fetchTimeline(value, this.state.timePerspective));
+        this.props.dispatch(fetchTimeline(value, this.state.timePerspective, appState.selectedProcess));
     }
 
     handlePerspectiveChange(e) {
+        const {appState} = this.props;
         let perspective = 'host';
 
         if (this.state.timePerspective == 'host') {
@@ -167,12 +176,13 @@ export default class PhaseTimeline extends React.Component {
             perspective = 'host';
         }
         this.setState({timePerspective: perspective});
-        this.props.dispatch(fetchTimeline(this.state.similarityThreshold, perspective));
+        this.props.dispatch(fetchTimeline(this.state.similarityThreshold, perspective, appState.selectedProcess));
     }
 
     handleSelectProcess(e) {
-        this.props.dispatch(setAppState('selectedProcess', e.target.value));
-        this.props.dispatch(fetchTimeline(this.state.similarityThreshold, this.state.timePerspective, e.target.value));
+        let selectedProcess = e.target.value;
+        this.props.dispatch(setAppState('selectedProcess', selectedProcess));
+        this.props.dispatch(fetchTimeline(this.state.similarityThreshold, this.state.timePerspective, selectedProcess));
     }
 
     render() {
@@ -189,11 +199,28 @@ export default class PhaseTimeline extends React.Component {
             chart.showLoading('Loading data from server...');
         } else if (timeline.fetched) {
             let chart = this.chart.getChart();
+            // TODO This ugly solution is bad and low performance
             if (timeline.data[0].length == 2) {
+                // If the size of first element is 2 means it's a 1-D timeline
                 chart.series[0].setData(timeline.data);
+                console.log(timeline.data);
+                if (appState.selectedProcess == '') {
+                    chart.series[0].name = appInfo.processes[0];
+                } else {
+                    chart.series[0].name = appState.selectedProcess;
+                }
+                for (var i = 1; i < chart.series.length; i++) {
+                    chart.series[i].setData([]);
+                }
             } else {
                 // The data contains multiple series
-                chart.series[0].setData(timeline.data[0]);
+                for (var i = 0; i < chart.series.length; i++) {
+                    chart.series[i].setData([]);
+                }
+                for (var i = 0; i < timeline.data.length; i++) {
+                    chart.series[i].setData(timeline.data[i]);
+                    chart.series[i].name = appInfo.processes[i];
+                }
             }
             chart.hideLoading();
         }
