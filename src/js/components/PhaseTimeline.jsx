@@ -69,6 +69,7 @@ const defaultOptions = {
 
     chart: {
         height: '400px',
+        zoomType: 'x',
     },
 
     scrollbar: {
@@ -83,9 +84,6 @@ const defaultSeries = {
         enabled: null, // auto
         radius: 3,
         lineWidth: 1,
-    },
-    tooltip: {
-        valueDecimals: 0,
     },
     linecap: 'round',
     allowPointSelect: true,
