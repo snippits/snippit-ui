@@ -44,3 +44,14 @@ th {
     white-space: nowrap;
     width: 1%;
 }
+
+.center {
+    margin: auto;
+    width: 50%;
+}
+
+.mcenter {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+}
