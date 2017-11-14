@@ -1,9 +1,37 @@
 import axios from 'axios';
 
+export function fetchInfo(query) {
+    let link = 'query';
+
+    return function(dispatch) {
+        dispatch({type: 'FETCH_INFO'});
+        axios.get(link, {
+            params: {
+                query: query,
+            }
+        }).then((response) => {
+            dispatch({
+                type: 'FETCH_INFO_FULFILLED',
+                query: query,
+                payload: response.data,
+            });
+        }).catch((err) => {
+            dispatch({
+                type: 'FETCH_INFO_REJECTED',
+                query: query,
+                payload: err,
+            });
+        });
+    };
+}
+
 // TODO: Add Cancellation in case of long latency
-export function fetchTimeline(similarityThreshold = 100, perspective = 'host') {
+export function fetchTimeline(similarityThreshold = 100, perspective = 'host', processID = null) {
     let link = 'phase/timeline';
 
+    if (processID) {
+        link = 'process/' + processID + '/' + link
+    }
     console.log(link);
     return function(dispatch) {
         dispatch({type: 'FETCH_TIMELINE'});
@@ -65,7 +93,7 @@ export function fetchProf(phaseID, similarityThreshold = 100) {
     };
 }
 
-export function setSelectedPhase(phaseID, similarityThreshold = 100) {
+export function getPerfs(phaseID, similarityThreshold = 100) {
     if (phaseID) {
         return [
             fetchTreemap(phaseID, similarityThreshold),
@@ -74,4 +102,10 @@ export function setSelectedPhase(phaseID, similarityThreshold = 100) {
         ];
     }
     return null;
+}
+
+export function setAppState(state, data) {
+    return [
+        {type: 'SET_APPSTATE', state: state, payload: data},
+    ];
 }

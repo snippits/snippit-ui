@@ -33,7 +33,63 @@ function phaseReducerHelper(action, obj) {
     return obj;
 }
 
+function fetchInfoReducer(action, obj) {
+    let tokens = action.type.split('_');
+
+    if (tokens.length == 2) {
+        tokens.push('');
+    }
+    switch (tokens[2]) {
+        case '': {
+            obj.fetching = true;
+            obj.fetched = false;
+            break;
+        }
+        case 'REJECTED': {
+            obj.fetching = false;
+            obj.fetched = true;
+            obj.error = action.payload;
+            break;
+        }
+        case 'FULFILLED': {
+            obj.fetching = false;
+            obj.fetched = true;
+            obj.error = null;
+            if (action.query == 'processes') {
+                if (action.payload == '') break;
+                obj.processes = action.payload.processes;
+                obj.allProcesses = action.payload.allProcesses;
+            }
+            break;
+        }
+    }
+
+    return obj;
+}
+
+
+function appStateReducer(action, obj) {
+    switch (action.state) {
+        case 'selectedProcess': {
+            obj.selectedProcess = action.payload;
+            break;
+        }
+    }
+
+    return obj;
+}
+
 export default function reducer(state={
+    appInfo: {
+        processes: [],
+        allProcesses: [],
+        fetching: false,
+        fetched: false,
+        error: null,
+    },
+    appState: {
+        selectedProcess: '',
+    },
     timeline: {
         data: [],
         similarityThreshold: 0,
@@ -79,6 +135,16 @@ export default function reducer(state={
             }
             case 'PROF': {
                 return {...state, prof: phaseReducerHelper(action, {...state.prof})};
+            }
+            case 'INFO': {
+                return {...state, appInfo: fetchInfoReducer(action, {...state.appInfo})};
+            }
+        }
+    }
+    if (tokens.length >= 2 && tokens[0] === 'SET') {
+        switch (tokens[1]) {
+            case 'APPSTATE': {
+                return {...state, appState: appStateReducer(action, {...state.appState})};
             }
         }
     }

@@ -10,6 +10,8 @@ import Layout from './pages/Layout';
 import Footer from './components/layout/Footer';
 
 import 'styles/range-slider.css';
+import 'styles/dropdown.css';
+import 'styles/switch.css';
 
 const app = document.getElementById('app');
 

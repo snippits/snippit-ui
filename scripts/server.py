@@ -77,11 +77,12 @@ def get_args(request):
     return ret
 
 
-def get_params(proc_id=None):
-    if proc_id is not None:
-        info = processes[proc_id]['info']
-        process_timeline = processes[proc_id]['timeline']
-        sim_mat = processes[proc_id]['similarityMatrix']
+def get_params(process_id=None):
+    if process_id is not None:
+        process_id = str(process_id)
+        info = processes[process_id]['info']
+        process_timeline = processes[process_id]['timeline']
+        sim_mat = processes[process_id]['similarityMatrix']
     else:
         info = processes['default_']['info']
         process_timeline = processes['default_']['timeline']
@@ -106,10 +107,31 @@ def index(request):
     return File(os.path.join(STATIC_DIR, 'index.html'))
 
 
-@app.route('/phase/timeline', methods=['POST', 'GET'])
+@app.route('/query')
 @timed
-def get_phase_timeline(request):
-    (info, process_timeline, sim_mat) = get_params()
+def query_info(request):
+    argv = get_args(request)
+    ret = ''
+    if argv.get('query') == 'processes':
+        print(argv)
+        pids = list(processes.keys())
+        pids.remove('default_')
+
+        data = {
+            'processes': sorted(pids),
+            'allProcesses': sorted(pids),
+        }
+        ret = json.dumps(data)
+
+    set_response_for_json(request)
+    return ret
+
+
+@app.route('/phase/timeline', defaults={'process_id': None})
+@app.route('/process/<int:process_id>/phase/timeline')
+@timed
+def get_phase_timeline(request, process_id):
+    (info, process_timeline, sim_mat) = get_params(process_id)
     argv = get_args(request)
     # Get mapping table for remapping the timeline to its new phase ID
     mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
@@ -127,11 +149,11 @@ def get_phase_timeline(request):
     set_response_for_json(request)
     return json.dumps(timeline_ret)
 
-
-@app.route('/phase/<int:phase_id>/treemap', methods=['POST'])
+@app.route('/phase/<int:phase_id>/treemap', defaults={'process_id': None})
+@app.route('/process/<int:process_id>/phase/<int:phase_id>/treemap')
 @timed
-def get_phase_treemap(request, phase_id):
-    (info, process_timeline, sim_mat) = get_params()
+def get_phase_treemap(request, process_id, phase_id):
+    (info, process_timeline, sim_mat) = get_params(process_id)
     argv = get_args(request)
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
@@ -147,10 +169,11 @@ def get_phase_treemap(request, phase_id):
     return json.dumps(treemap_ret)
 
 
-@app.route('/phase/<int:phase_id>/prof', methods=['POST'])
+@app.route('/phase/<int:phase_id>/prof', defaults={'process_id': None})
+@app.route('/process/<int:process_id>/phase/<int:phase_id>/prof')
 @timed
-def get_phase_prof(request, phase_id):
-    (info, process_timeline, sim_mat) = get_params()
+def get_phase_prof(request, process_id, phase_id):
+    (info, process_timeline, sim_mat) = get_params(process_id)
     argv = get_args(request)
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
@@ -165,10 +188,11 @@ def get_phase_prof(request, phase_id):
     return json.dumps(counters)
 
 
-@app.route('/phase/<int:phase_id>/codes', methods=['POST'])
+@app.route('/phase/<int:phase_id>/codes', defaults={'process_id': None})
+@app.route('/process/<int:process_id>/phase/<int:phase_id>/codes')
 @timed
-def get_phase_code(request, phase_id):
-    (info, process_timeline, sim_mat) = get_params()
+def get_phase_code(request, process_id, phase_id):
+    (info, process_timeline, sim_mat) = get_params(process_id)
     argv = get_args(request)
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
