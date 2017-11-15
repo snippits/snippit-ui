@@ -173,16 +173,16 @@ export default class PhaseTimeline extends React.Component {
                 // Donot redraw while adding new series
                 chart.addSeries(this.createSeries(names[i], series[i]), false);
             }
-            // redraw now!
-            chart.redraw();
         } else {
             for (let i = 0; i < series.length; i++) {
                 chart.series[i].setData(series[i], false);
                 chart.series[i].name = names[i];
             }
-            // redraw now!
-            chart.redraw();
         }
+        // redraw after some delay for DOM updates
+        setTimeout(() => {
+            chart.redraw();
+        }, 20);
     }
 
     selectEvent(event) {
