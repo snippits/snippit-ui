@@ -77,19 +77,6 @@ def get_args(request):
     return ret
 
 
-def get_params(process_id=None):
-    if process_id is not None:
-        process_id = str(process_id)
-        info = processes[process_id]['info']
-        process_timeline = processes[process_id]['timeline']
-        sim_mat = processes[process_id]['similarityMatrix']
-    else:
-        info = processes['default_']['info']
-        process_timeline = processes['default_']['timeline']
-        sim_mat = processes['default_']['similarityMatrix']
-    return (info, process_timeline, sim_mat)
-
-
 def set_response_for_json(request):
     request.setHeader('Content-Type', 'application/json')
     request.setHeader('Cache-Control', 'no-store')
@@ -137,38 +124,45 @@ def get_timeline_middlewares(mapping_table, step_size=0):
 
     return middlewares
 
+
+# NOTE: process_id is defined as string. It could be a pid '748' or a name like 'testProgram'
 @app.route('/phase/timeline', defaults={'process_id': None})
 @app.route('/process/<process_id>/phase/timeline')
 @timed
 def get_phase_timeline(request, process_id):
     argv = get_args(request)
-    perspective = argv.get('timePerspective') or 'host'
-    step_size = 10.0 if perspective == 'host' else 1.0
+    process_id = process_id or 'default_'    # set process_id to default
+    perspective = argv.get('timePerspective') or 'host'    # get perspective of timeline host/guest
+    step_size = 10.0 if perspective == 'host' else 1.0    # default value
+    step_size = argv.get('quantization') or step_size    # override value if present
 
     timeline_ret = []
     if process_id == 'all':
         for pid, proc in processes.items():
-            if pid == 'default_': continue  # Skip this one
-            (info, process_timeline, sim_mat) = get_params(pid)
-            mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
+            if pid == 'default_': continue    # Skip this one
+            mapping_table = utils.get_phase_mapping(proc['similarityMatrix'],
+                                                    argv['similarityThreshold'])
             middlewares = get_timeline_middlewares(mapping_table, step_size)
-            timeline_ret += [utils.apply_middleware(middlewares, process_timeline[perspective])]
+            timeline_ret += [utils.apply_middleware(middlewares, proc['timeline'][perspective])]
     else:
-        (info, process_timeline, sim_mat) = get_params(process_id)
-        mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
+        proc = processes[process_id]
+        mapping_table = utils.get_phase_mapping(proc['similarityMatrix'],
+                                                argv['similarityThreshold'])
         middlewares = get_timeline_middlewares(mapping_table, step_size)
-        timeline_ret = utils.apply_middleware(middlewares, process_timeline[perspective])
+        timeline_ret = utils.apply_middleware(middlewares, proc['timeline'][perspective])
     set_response_for_json(request)
     return json.dumps(timeline_ret)
 
+
 @app.route('/phase/<int:phase_id>/treemap', defaults={'process_id': None})
-@app.route('/process/<int:process_id>/phase/<int:phase_id>/treemap')
+@app.route('/process/<process_id>/phase/<int:phase_id>/treemap')
 @timed
 def get_phase_treemap(request, process_id, phase_id):
-    (info, process_timeline, sim_mat) = get_params(process_id)
     argv = get_args(request)
+    process_id = process_id or 'default_'    # set process_id to default
+    proc = processes[process_id]
     # Create new phase list according to the inputs
-    mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
+    mapping_table = utils.get_phase_mapping(proc['similarityMatrix'], argv['similarityThreshold'])
 
     middlewares = [
         partial(phase.remap, mapping_table=mapping_table),
@@ -176,45 +170,47 @@ def get_phase_treemap(request, process_id, phase_id):
         partial(treemap.parse),
     ]
 
-    treemap_ret = utils.apply_middleware(middlewares, info['phase'])
+    treemap_ret = utils.apply_middleware(middlewares, proc['info']['phase'])
     set_response_for_json(request)
     return json.dumps(treemap_ret)
 
 
 @app.route('/phase/<int:phase_id>/prof', defaults={'process_id': None})
-@app.route('/process/<int:process_id>/phase/<int:phase_id>/prof')
+@app.route('/process/<process_id>/phase/<int:phase_id>/prof')
 @timed
 def get_phase_prof(request, process_id, phase_id):
-    (info, process_timeline, sim_mat) = get_params(process_id)
     argv = get_args(request)
+    process_id = process_id or 'default_'    # set process_id to default
+    proc = processes[process_id]
     # Create new phase list according to the inputs
-    mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
+    mapping_table = utils.get_phase_mapping(proc['similarityMatrix'], argv['similarityThreshold'])
 
     middlewares = [
         partial(phase.remap, mapping_table=mapping_table),
         partial(lambda phase_list: phase_list[phase_id]['counters']),
     ]
 
-    counters = utils.apply_middleware(middlewares, info['phase'])
+    counters = utils.apply_middleware(middlewares, proc['info']['phase'])
     set_response_for_json(request)
     return json.dumps(counters)
 
 
 @app.route('/phase/<int:phase_id>/codes', defaults={'process_id': None})
-@app.route('/process/<int:process_id>/phase/<int:phase_id>/codes')
+@app.route('/process/<process_id>/phase/<int:phase_id>/codes')
 @timed
 def get_phase_code(request, process_id, phase_id):
-    (info, process_timeline, sim_mat) = get_params(process_id)
     argv = get_args(request)
+    process_id = process_id or 'default_'    # set process_id to default
+    proc = processes[process_id]
     # Create new phase list according to the inputs
-    mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
+    mapping_table = utils.get_phase_mapping(proc['similarityMatrix'], argv['similarityThreshold'])
 
     middlewares = [
         partial(phase.remap, mapping_table=mapping_table),
         partial(lambda phase_list: phase_list[phase_id]['codes']),
     ]
 
-    codes = utils.apply_middleware(middlewares, info['phase'])
+    codes = utils.apply_middleware(middlewares, proc['info']['phase'])
     set_response_for_json(request)
     return json.dumps(codes)
 
