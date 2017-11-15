@@ -131,10 +131,9 @@ def get_timeline_middlewares(mapping_table, step_size=0):
 @timed
 def get_phase_timeline(request, process_id):
     argv = get_args(request)
-    process_id = process_id or 'default_'    # set process_id to default
-    perspective = argv.get('timePerspective') or 'host'    # get perspective of timeline host/guest
-    step_size = 10.0 if perspective == 'host' else 1.0    # default value
-    step_size = argv.get('quantization') or step_size    # override value if present
+    process_id = process_id or 'default_'
+    perspective = argv.get('timePerspective', 'host')
+    step_size = argv.get('quantization', {'host': 10.0, 'guest': 1.0}[perspective])
 
     timeline_ret = []
     if process_id == 'all':
