@@ -110,6 +110,7 @@ export default class PhaseTimeline extends React.Component {
             similarityThreshold: 0,
             timePerspective: 'host',
         };
+        this.timelineID = 0;
 
         // This binding is necessary to make `this` work in the callback
         this.handleSliderChange = this.handleSliderChange.bind(this);
@@ -192,7 +193,8 @@ export default class PhaseTimeline extends React.Component {
     handleSliderChange(value) {
         const {appState} = this.props;
         this.setState({similarityThreshold: value});
-        this.props.dispatch(fetchTimeline(value, this.state.timePerspective, appState.selectedProcess));
+        this.timelineID++;
+        this.props.dispatch(fetchTimeline(value, this.state.timePerspective, appState.selectedProcess, this.timelineID));
     }
 
     handlePerspectiveChange(e) {
@@ -233,7 +235,10 @@ export default class PhaseTimeline extends React.Component {
             const names = (proc != 'all') ? [proc] : appInfo.processes;
 
             // window.timelineChart = chart;
-            this.updateSeries(chart, names, series);
+            // Only draw the latest one, skipping the outdated responses
+            if (timeline.id == this.timelineID) {
+                this.updateSeries(chart, names, series);
+            }
             chart.hideLoading();
         }
 

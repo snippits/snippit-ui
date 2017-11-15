@@ -6,11 +6,13 @@ function phaseReducerHelper(action, obj) {
     }
     switch (tokens[2]) {
         case '': {
+            obj.id = action.id ? action.id : obj.id; // ID is always > 0
             obj.fetching = true;
             obj.fetched = false;
             break;
         }
         case 'REJECTED': {
+            obj.id = action.id ? action.id : obj.id; // ID is always > 0
             obj.fetching = false;
             obj.fetched = true;
             obj.error = action.payload;
@@ -18,6 +20,7 @@ function phaseReducerHelper(action, obj) {
             break;
         }
         case 'FULFILLED': {
+            obj.id = action.id ? action.id : obj.id; // ID is always > 0
             obj.fetching = false;
             obj.fetched = true;
             obj.error = null;
@@ -91,6 +94,7 @@ export default function reducer(state={
         selectedProcess: '',
     },
     timeline: {
+        id: 0,
         data: [],
         similarityThreshold: 0,
         fetching: false,
@@ -98,6 +102,7 @@ export default function reducer(state={
         error: null,
     },
     treemap: {
+        id: 0,
         data: [],
         phaseID: -1,
         fetching: false,
@@ -105,6 +110,7 @@ export default function reducer(state={
         error: null,
     },
     code: {
+        id: 0,
         data: [],
         phaseID: -1,
         fetching: false,
@@ -112,6 +118,7 @@ export default function reducer(state={
         error: null,
     },
     prof: {
+        id: 0,
         data: {},
         phaseID: -1,
         fetching: false,
