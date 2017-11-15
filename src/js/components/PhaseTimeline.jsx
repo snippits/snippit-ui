@@ -4,7 +4,11 @@ import {connect} from 'react-redux';
 import SimilaritySlider from '../components/SimilaritySlider';
 import ReactHighstock from 'react-highcharts/ReactHighstock';
 import extendExporting from 'highcharts-exporting';
+import extendBoost from "highcharts-boost";
+
 extendExporting(ReactHighstock.Highcharts);
+// boost does not work properly, donnot enable it yet
+//extendBoost(ReactHighstock.Highcharts);
 
 import {fetchTimeline, getPerfs} from '../actions/phaseActions.js';
 import {fetchInfo, setAppState} from '../actions/phaseActions.js';
@@ -72,28 +76,22 @@ const defaultOptions = {
         zoomType: 'x',
     },
 
+    boost: {
+        useGPUTranslations: false,
+    },
+
+    tooltip: {
+        split: true,
+        pointFormat: ' <span style="color:{series.color}">● </span><b>{series.name} :</b> Phase <b>{point.y}</b> <br/>',
+        changeDecimals: 0,
+        valueDecimals: 0,
+    },
+
     scrollbar: {
         liveRedraw: false,
     },
-    series: [],
-};
 
-const defaultSeries = {
-    name: 'Phase ID',
-    marker: {
-        enabled: null, // auto
-        radius: 3,
-        lineWidth: 1,
-    },
-    linecap: 'round',
-    allowPointSelect: true,
-    showCheckbox: false,
-    selected: true,
-    data: [],
-    point: {events: {}},
-    dataGrouping: {
-        enabled: false,
-    },
+    series: [],
 };
 
 @connect((store) => {
@@ -123,12 +121,6 @@ export default class PhaseTimeline extends React.Component {
     componentWillMount() {
         this.config = JSON.parse(JSON.stringify(defaultOptions));
 
-        // Assign inital value of data series
-        // TODO This is not that good
-        for (let i = 0; i < 16; i++) {
-            this.config.series.push(this.createSeries());
-        }
-
         // Set initial value if it's not assigned
         let similarityThreshold = this.props.similarityThreshold;
         this.setState({similarityThreshold: similarityThreshold});
@@ -137,15 +129,53 @@ export default class PhaseTimeline extends React.Component {
         this.props.dispatch(fetchTimeline(similarityThreshold, this.state.timePerspective));
     }
 
-    createSeries() {
-        // Push a new series of our default config with deep copy
-        const newSeries = JSON.parse(JSON.stringify(defaultSeries));
-        // Assign data to the first series
-        newSeries.data = [];
-        // Assign mouse event to the first series
-        newSeries.point.events.select = this.selectEvent.bind(this);
+    createSeries(name, data) {
+        const newSeries = {
+            name: name,
+            marker: {
+                enabled: null, // auto
+                radius: 3,
+                lineWidth: 1,
+            },
+            linecap: 'round',
+            allowPointSelect: true,
+            showCheckbox: false,
+            selected: true,
+            data: data,
+            point: {events: {
+                // Assign mouse event to the first series
+                select: this.selectEvent.bind(this),
+            }},
+            dataGrouping: {
+                enabled: false,
+            },
+            boostThreshold: 1000,
+        };
 
         return newSeries;
+    }
+
+    updateSeries(chart, names, series) {
+        // Minus 1 for the navigator
+        if (chart.series.length - 1 != series.length) {
+            while (chart.series.length > 0) {
+                // Donot redraw while removing series
+                chart.series[0].remove(false);
+            }
+            for (var i = 0; i < series.length; i++) {
+                // Donot redraw while adding new series
+                chart.addSeries(this.createSeries(names[i], series[i]), false);
+            }
+            // redraw now!
+            chart.redraw();
+        } else {
+            for (var i = 0; i < series.length; i++) {
+                chart.series[i].setData(series[i], false);
+                chart.series[i].name = names[i];
+            }
+            // redraw now!
+            chart.redraw();
+        }
     }
 
     selectEvent(event) {
@@ -191,36 +221,19 @@ export default class PhaseTimeline extends React.Component {
         const {appState} = this.props;
 
         if (timeline.error) {
-            let chart = this.chart.getChart();
+            const chart = this.chart.getChart();
             chart.showLoading('Timeline Result Not Found');
         } else if (timeline.fetching) {
-            let chart = this.chart.getChart();
+            const chart = this.chart.getChart();
             chart.showLoading('Loading data from server...');
         } else if (timeline.fetched) {
-            let chart = this.chart.getChart();
-            // TODO This ugly solution is bad and low performance
-            if (timeline.data[0].length == 2) {
-                // If the size of first element is 2 means it's a 1-D timeline
-                chart.series[0].setData(timeline.data);
+            const chart = this.chart.getChart();
+            const series = (timeline.data[0].length == 2) ? [timeline.data] : timeline.data;
+            const proc = (appState.selectedProcess == '') ? appInfo.processes[0] : appState.selectedProcess;
+            const names = (proc != 'all') ? [proc] : appInfo.processes;
 
-                if (appState.selectedProcess == '') {
-                    chart.series[0].name = appInfo.processes[0];
-                } else {
-                    chart.series[0].name = appState.selectedProcess;
-                }
-                for (var i = 1; i < chart.series.length; i++) {
-                    chart.series[i].setData([]);
-                }
-            } else {
-                // The data contains multiple series
-                for (var i = 0; i < chart.series.length; i++) {
-                    chart.series[i].setData([]);
-                }
-                for (var i = 0; i < timeline.data.length; i++) {
-                    chart.series[i].setData(timeline.data[i]);
-                    chart.series[i].name = appInfo.processes[i];
-                }
-            }
+            // window.timelineChart = chart;
+            this.updateSeries(chart, names, series);
             chart.hideLoading();
         }
 
