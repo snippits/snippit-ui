@@ -163,14 +163,14 @@ export default class PhaseTimeline extends React.Component {
                 // Donot redraw while removing series
                 chart.series[0].remove(false);
             }
-            for (var i = 0; i < series.length; i++) {
+            for (let i = 0; i < series.length; i++) {
                 // Donot redraw while adding new series
                 chart.addSeries(this.createSeries(names[i], series[i]), false);
             }
             // redraw now!
             chart.redraw();
         } else {
-            for (var i = 0; i < series.length; i++) {
+            for (let i = 0; i < series.length; i++) {
                 chart.series[i].setData(series[i], false);
                 chart.series[i].name = names[i];
             }
@@ -251,12 +251,15 @@ export default class PhaseTimeline extends React.Component {
                             value={this.state.similarityThreshold} />
                     </div>
                     <div className='col-md-1 tg-list' style={{marginTop: '25px'}}>
-                        <input className="tgl tgl-skewed" id="cb3" type="checkbox" onChange={this.handlePerspectiveChange}/>
+                        <input type="checkbox" className="tgl tgl-skewed" id="cb3"
+                            onChange={this.handlePerspectiveChange}/>
                         <label className="tgl-btn center" data-tg-off="host" data-tg-on="guest" htmlFor="cb3"/ >
                     </div>
                     <div className='col-md-2'>
                         <p>Process: </p>
-                        <select className="select_box" onChange={this.handleSelectProcess} value={appState.selectedProcess}>
+                        <select className="select_box"
+                            onChange={this.handleSelectProcess} value={appState.selectedProcess}>
+
                             {appInfo.processes.map((pid, i) =>
                                 <option key={pid} value={pid}>{pid}</option>
                             )}
