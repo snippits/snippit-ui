@@ -4,11 +4,11 @@ import {connect} from 'react-redux';
 import SimilaritySlider from '../components/SimilaritySlider';
 import ReactHighstock from 'react-highcharts/ReactHighstock';
 import extendExporting from 'highcharts-exporting';
-import extendBoost from "highcharts-boost";
-
 extendExporting(ReactHighstock.Highcharts);
+
 // boost does not work properly, donnot enable it yet
-//extendBoost(ReactHighstock.Highcharts);
+// import extendBoost from 'highcharts-boost';
+// extendBoost(ReactHighstock.Highcharts);
 
 import {fetchTimeline, getPerfs} from '../actions/phaseActions.js';
 import {fetchInfo, setAppState} from '../actions/phaseActions.js';
