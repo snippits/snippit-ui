@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export function fetchInfo(query, id = null) {
+export function fetchInfo(query, callback = null, id = null) {
     let link = 'query';
 
     return function(dispatch) {
@@ -16,6 +16,11 @@ export function fetchInfo(query, id = null) {
                 query: query,
                 payload: response.data,
             });
+            return response;
+        }).then((response) => {
+            if (callback) {
+                callback(response.data);
+            }
         }).catch((err) => {
             dispatch({
                 id: id,
