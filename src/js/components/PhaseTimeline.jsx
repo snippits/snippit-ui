@@ -126,8 +126,14 @@ export default class PhaseTimeline extends React.Component {
         let similarityThreshold = this.props.similarityThreshold;
         this.setState({similarityThreshold: similarityThreshold});
 
-        this.props.dispatch(fetchInfo('processes'));
-        this.props.dispatch(fetchTimeline(similarityThreshold, this.state.timePerspective));
+        // Fetch info and then setup default process with fetching its timeline
+        this.props.dispatch(fetchInfo('processes', (info) => {
+            const processID = info['processes'][0]; // Default: First parent process
+            this.props.dispatch([
+                setAppState('selectedProcess', processID),
+                fetchTimeline(similarityThreshold, this.state.timePerspective, processID),
+            ]);
+        }));
     }
 
     createSeries(name, data) {
@@ -191,29 +197,28 @@ export default class PhaseTimeline extends React.Component {
     }
 
     handleSliderChange(value) {
-        const {appState} = this.props;
+        const {dispatch, appState} = this.props;
+
         this.setState({similarityThreshold: value});
         this.timelineID++;
-        this.props.dispatch(fetchTimeline(value, this.state.timePerspective, appState.selectedProcess, this.timelineID));
+        dispatch(fetchTimeline(value, this.state.timePerspective, appState.selectedProcess, this.timelineID));
     }
 
     handlePerspectiveChange(e) {
-        const {appState} = this.props;
-        let perspective = 'host';
+        const {dispatch, appState} = this.props;
+        // Toggle the perspective
+        const perspective = (this.state.timePerspective === 'host') ? 'guest' : 'host';
 
-        if (this.state.timePerspective == 'host') {
-            perspective = 'guest';
-        } else {
-            perspective = 'host';
-        }
         this.setState({timePerspective: perspective});
-        this.props.dispatch(fetchTimeline(this.state.similarityThreshold, perspective, appState.selectedProcess));
+        dispatch(fetchTimeline(this.state.similarityThreshold, perspective, appState.selectedProcess));
     }
 
     handleSelectProcess(e) {
-        let selectedProcess = e.target.value;
-        this.props.dispatch(setAppState('selectedProcess', selectedProcess));
-        this.props.dispatch(fetchTimeline(this.state.similarityThreshold, this.state.timePerspective, selectedProcess));
+        const {dispatch} = this.props;
+        const selectedProcess = e.target.value;
+
+        dispatch(setAppState('selectedProcess', selectedProcess));
+        dispatch(fetchTimeline(this.state.similarityThreshold, this.state.timePerspective, selectedProcess));
     }
 
     render() {
@@ -231,8 +236,7 @@ export default class PhaseTimeline extends React.Component {
         } else if (timeline.fetched) {
             const chart = this.chart.getChart();
             const series = (timeline.data[0].length == 2) ? [timeline.data] : timeline.data;
-            const proc = (appState.selectedProcess == '') ? appInfo.processes[0] : appState.selectedProcess;
-            const names = (proc != 'all') ? [proc] : appInfo.processes;
+            const names = (appState.selectedProcess === 'all') ? appInfo.processes : [appState.selectedProcess];
 
             // window.timelineChart = chart;
             // Only draw the latest one, skipping the outdated responses

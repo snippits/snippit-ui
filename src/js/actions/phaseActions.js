@@ -125,7 +125,5 @@ export function getPerfs(phaseID, similarityThreshold = 100, processID = null, i
 }
 
 export function setAppState(state, data) {
-    return [
-        {type: 'SET_APPSTATE', state: state, payload: data},
-    ];
+    return {type: 'SET_APPSTATE', state: state, payload: data};
 }
