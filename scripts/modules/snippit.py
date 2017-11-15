@@ -46,15 +46,18 @@ def load(proc_path):
     for dirname in sorted(os.listdir(proc_path)):
         phase_path = os.path.join(proc_path, dirname)
         print('Found process \'{}\''.format(phase_path))
+
+        phase_result = load_phase(phase_path)
         ret_dict[str(dirname)] = {
-            'info': load_phase(phase_path),
+            'apiVersion': phase_result['apiVersion'],
+            'phases': phase_result['phases'],
             'timeline': load_timeline(phase_path),
             'similarityMatrix': Hashable(np.asarray(load_similarity_matrix(phase_path))),
         }
         process = ret_dict[str(dirname)]
-        if process['info']:
-            code.resolve_path(process['info']['phase'])
-            file_list = code.parse_file_list(process['info']['phase'])
+        if process['phases']:
+            code.resolve_path(process['phases'])
+            file_list = code.parse_file_list(process['phases'])
             process['workDirs'] = code.locate_working_directory(file_list)
         if process['timeline']:
             process['timeline']['host'] = Hashable(map(_mask_zero, process['timeline']['host']))

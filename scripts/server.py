@@ -170,7 +170,7 @@ def get_phase_treemap(request, process_id, phase_id):
         partial(treemap.parse),
     ]
 
-    treemap_ret = utils.apply_middleware(middlewares, proc['info']['phase'])
+    treemap_ret = utils.apply_middleware(middlewares, proc['phases'])
     set_response_for_json(request)
     return json.dumps(treemap_ret)
 
@@ -190,7 +190,7 @@ def get_phase_prof(request, process_id, phase_id):
         partial(lambda phase_list: phase_list[phase_id]['counters']),
     ]
 
-    counters = utils.apply_middleware(middlewares, proc['info']['phase'])
+    counters = utils.apply_middleware(middlewares, proc['phases'])
     set_response_for_json(request)
     return json.dumps(counters)
 
@@ -210,7 +210,7 @@ def get_phase_code(request, process_id, phase_id):
         partial(lambda phase_list: phase_list[phase_id]['codes']),
     ]
 
-    codes = utils.apply_middleware(middlewares, proc['info']['phase'])
+    codes = utils.apply_middleware(middlewares, proc['phases'])
     set_response_for_json(request)
     return json.dumps(codes)
 
