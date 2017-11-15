@@ -126,48 +126,38 @@ def query_info(request):
     return ret
 
 
+def get_timeline_middlewares(mapping_table, step_size=0):
+    middlewares = []
+
+    # Quantitize the X values if presents or not zero
+    if step_size:
+        middlewares += [partial(timeline.resample, quantization=step_size)]
+    # Re-mapping the phase ID
+    middlewares += [partial(timeline.remap, mapping_table=mapping_table)]
+
+    return middlewares
+
 @app.route('/phase/timeline', defaults={'process_id': None})
-@app.route('/process/<int:process_id>/phase/timeline')
+@app.route('/process/<process_id>/phase/timeline')
 @timed
 def get_phase_timeline(request, process_id):
-    (info, process_timeline, sim_mat) = get_params(process_id)
     argv = get_args(request)
-    # Get mapping table for remapping the timeline to its new phase ID
-    mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
-
-    from modules.timeline import Event
-    middlewares = [
-        partial(timeline.remap, mapping_table=mapping_table),
-    #partial(timeline.append_event, event_list=info['events'], event=Event.CONTEXT_SWITCH),
-    #partial(sorted),
-    ]
-    perspective = argv.get('timePerspective')
-    if perspective != 'guest':
-        perspective = 'host'
-    timeline_ret = utils.apply_middleware(middlewares, process_timeline[perspective])
-    set_response_for_json(request)
-    return json.dumps(timeline_ret)
-
-@app.route('/process/all/phase/timeline')
-@timed
-def get_phase_timeline_all(request):
-    argv = get_args(request)
-    perspective = argv.get('timePerspective')
-    if perspective != 'guest':
-        perspective = 'host'
+    perspective = argv.get('timePerspective') or 'host'
+    step_size = 10.0 if perspective == 'host' else 1.0
 
     timeline_ret = []
-    for pid, proc in processes.items():
-        if pid == 'default_': continue  # Skip this one
-        info = proc['info']
-        sim_mat = proc['similarityMatrix']
-        # Get mapping table for remapping the timeline to its new phase ID
+    if process_id == 'all':
+        for pid, proc in processes.items():
+            if pid == 'default_': continue  # Skip this one
+            (info, process_timeline, sim_mat) = get_params(pid)
+            mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
+            middlewares = get_timeline_middlewares(mapping_table, step_size)
+            timeline_ret += [utils.apply_middleware(middlewares, process_timeline[perspective])]
+    else:
+        (info, process_timeline, sim_mat) = get_params(process_id)
         mapping_table = utils.get_phase_mapping(sim_mat, argv['similarityThreshold'])
-
-        middlewares = [
-            partial(timeline.remap, mapping_table=mapping_table),
-        ]
-        timeline_ret += [utils.apply_middleware(middlewares, proc['timeline'][perspective])]
+        middlewares = get_timeline_middlewares(mapping_table, step_size)
+        timeline_ret = utils.apply_middleware(middlewares, process_timeline[perspective])
     set_response_for_json(request)
     return json.dumps(timeline_ret)
 
