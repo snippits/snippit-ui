@@ -102,8 +102,8 @@ class HighlightedCode extends React.Component {
             return values.map((code, i) =>
                 <tr key={i} className='no-border'>
                     <td className='col-md-1 walk-count'>{code.walk}</td>
-                    <td className='line-num'>{i} </td>
-                    <td className='code'>{code.line}</td>
+                    <td className='line-num'>{i}</td>
+                    <td className='code'>{code.line + '\n'}</td>
                 </tr>
             );
         }
