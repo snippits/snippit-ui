@@ -144,6 +144,7 @@ const BranchTable = (props) => {
 const CacheTableRaw = (props) => {
     const {name} = props;
     const {counters} = props;
+    if (counters === undefined) return (<tr></tr>);
     return (
         <tr>
             <td>{name}</td>
