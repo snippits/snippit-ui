@@ -79,6 +79,40 @@ export function fetchTreemap(phaseID, similarityThreshold = 100, processID = nul
     };
 }
 
+export function fetchFiles(phaseID, similarityThreshold = 100, processID = null, id = null) {
+    let link = 'phase/' + phaseID + '/codes/files';
+
+    if (processID) {
+        link = 'process/' + processID + '/' + link;
+    }
+    return function(dispatch) {
+        axios.post(link, {
+            similarityThreshold: similarityThreshold,
+        }).then((response) => {
+            dispatch({id: id, type: 'FETCH_FILES_FULFILLED', payload: response.data, phaseID: phaseID});
+        }).catch((err) => {
+            dispatch({id: id, type: 'FETCH_FILES_REJECTED', payload: err, phaseID: phaseID});
+        });
+    };
+}
+
+export function fetchFile(file = null, callback = null, id = null) {
+    let link = 'host/file';
+
+    return function(dispatch) {
+        axios.post(link, {
+            filePath: file,
+        }).then((response) => {
+            dispatch({id: id, type: 'FETCH_FILE_FULFILLED', payload: response.data});
+            return response;
+        }).then((response) => {
+            if (callback) callback(response.data);
+        }).catch((err) => {
+            dispatch({id: id, type: 'FETCH_FILE_REJECTED', payload: err});
+        });
+    };
+}
+
 export function fetchCode(phaseID, similarityThreshold = 100, processID = null, id = null) {
     let link = 'phase/' + phaseID + '/codes';
 
@@ -117,6 +151,7 @@ export function getPerfs(phaseID, similarityThreshold = 100, processID = null, i
     if (phaseID) {
         return [
             fetchTreemap(phaseID, similarityThreshold, processID, id),
+            fetchFiles(phaseID, similarityThreshold, processID, id),
             fetchCode(phaseID, similarityThreshold, processID, id),
             fetchProf(phaseID, similarityThreshold, processID, id),
         ];

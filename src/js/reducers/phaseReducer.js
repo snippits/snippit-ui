@@ -109,6 +109,14 @@ export default function reducer(state={
         fetched: false,
         error: null,
     },
+    files: {
+        id: 0,
+        data: [],
+        phaseID: -1,
+        fetching: false,
+        fetched: false,
+        error: null,
+    },
     code: {
         id: 0,
         data: [],
@@ -136,6 +144,9 @@ export default function reducer(state={
             }
             case 'TREEMAP': {
                 return {...state, treemap: phaseReducerHelper(action, {...state.treemap})};
+            }
+            case 'FILES': {
+                return {...state, files: phaseReducerHelper(action, {...state.files})};
             }
             case 'CODE': {
                 return {...state, code: phaseReducerHelper(action, {...state.code})};
