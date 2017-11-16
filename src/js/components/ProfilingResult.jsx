@@ -36,6 +36,8 @@ const InstBreakdownBar = (props) => {
         <div className="progress" style={{margin: 0}}>
             {ratioBreakdowns.map( (ratio) =>
                 <div key={ratio.name}
+                    data-toggle="tooltip" data-placement="top"
+                    title={ratio.name + ' (' + ratio.value + '%)'}
                     className={'progress-bar ' + ratio.color}
                     role='progressbar'
                     style={{width: ratio.value + '%'}}>
