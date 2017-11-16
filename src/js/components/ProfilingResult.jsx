@@ -2,6 +2,50 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {round} from '../common.js';
 
+
+const InstBreakdownBar = (props) => {
+    const category = ['aluOp', 'bitOp', 'branch', 'load', 'store'];
+    const colors = {
+        'aluOp': 'progress-bar-danger',
+        'bitOp': 'progress-bar-primary',
+        'branch': 'progress-bar-success',
+        'load': 'progress-bar-warning',
+        'store': 'progress-bar-info',
+    };
+    const total = category.reduce((sum, name) => {
+        if (props.inst[name]) return sum + props.inst[name];
+        else return sum;
+    }, 0);
+    const ratioBreakdowns = [];
+    for (let i = 0; i < category.length; i++) {
+        const name = category[i];
+        if (props.inst[name]) {
+            ratioBreakdowns.push({
+                name: name,
+                color: colors[name],
+                value: round(100 * (props.inst[name] / total)),
+            });
+        }
+    }
+    const fixVal = 100 - ratioBreakdowns.reduce((sum, item) => {
+        return sum + item.value;
+    }, 0);
+    // Adjust the last element to ensure that total sum is exactly 100%
+    ratioBreakdowns.slice(-1)[0].value += fixVal;
+    return (
+        <div className="progress" style={{margin: 0}}>
+            {ratioBreakdowns.map( (ratio) =>
+                <div key={ratio.name}
+                    className={'progress-bar ' + ratio.color}
+                    role='progressbar'
+                    style={{width: ratio.value + '%'}}>
+                    {ratio.name} ({ratio.value}%)
+                </div>
+            )}
+        </div>
+    );
+};
+
 const UserRatioBar = (props) => {
     const userRatio = round(100 * props.user / (props.user + props.system));
     const systemRatio = 100 - userRatio;
@@ -33,7 +77,6 @@ const UserRatioBar = (props) => {
 const CPUTableRow = (props) => {
     const {name} = props;
     const {counters} = props;
-    // TODO Print alu, load, store, ... ratio. instead of user/system
     return (
         <tr>
             <td>{name}</td>
@@ -60,6 +103,11 @@ const CPUTable = (props) => {
                 <CPUTableRow name='Instruction' counters={value.instruction} />
                 <CPUTableRow name='Load' counters={value.load} />
                 <CPUTableRow name='Store' counters={value.store} />
+                <tr>
+                    <td colSpan='3'>
+                        <InstBreakdownBar inst={value.instruction} />
+                    </td>
+                </tr>
             </tbody>
         </table>
     );

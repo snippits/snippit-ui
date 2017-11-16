@@ -11,6 +11,15 @@ from myutils.utils import CustomJSONDecoder
 from myutils.utils import Hashable
 
 
+def append_inst_breakdown(phase_result):
+    for phase in phase_result['phases']:
+        if phase['id'] == 0: continue    # Skip invalid phase
+        inst = phase['counters']['instruction']
+        breakdown = phase['fingerprint']
+        for i, k in enumerate(breakdown['keys']):
+            inst[k] = int(inst['total'] * breakdown['values'][i])
+
+
 def load_phase(path):
     phase_path = path + '/phases'
     with open(phase_path) as json_data:
@@ -38,7 +47,8 @@ def load_event(path):
         try:
             return {
                 'host': Hashable(list(zip(data['events']['hostTime'], data['events']['phaseID']))),
-                'guest': Hashable(list(zip(data['events']['guestTime'], data['events']['phaseID'])))
+                'guest': Hashable(
+                    list(zip(data['events']['guestTime'], data['events']['phaseID'])))
             }
         except KeyError:
             # events is an optional value here
@@ -64,6 +74,7 @@ def load(proc_path):
         print('Found process \'{}\''.format(phase_path))
 
         phase_result = load_phase(phase_path)
+        append_inst_breakdown(phase_result)
         ret_dict[str(dirname)] = {
             'apiVersion': phase_result['apiVersion'],
             'phases': phase_result['phases'],
