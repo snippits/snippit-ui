@@ -107,6 +107,8 @@ export default class PhaseTimeline extends React.Component {
 
         this.config = {};
         this.state = {
+            processID: null,
+            phaseID: null,
             similarityThreshold: 0,
             timePerspective: 'host',
         };
@@ -189,6 +191,7 @@ export default class PhaseTimeline extends React.Component {
         const selectedItem = event.target['y'];
         const selectedProcessID = parseInt(event.target.series.name) || null;
 
+        this.setState({processID: selectedProcessID, phaseID: selectedItem});
         if (selectedItem && selectedProcessID) {
             this.props.dispatch(getPerfs(selectedItem, this.state.similarityThreshold, selectedProcessID));
             return true;
@@ -276,6 +279,12 @@ export default class PhaseTimeline extends React.Component {
                         config={this.config}
                         isPureConfig={true}
                         ref={(ref) => this.chart = ref} />
+                </div>
+                <div className='col-md-12'>
+                    <div className='col-md-4'></div>
+                    <h3 className='col-md-2'>Process ID: {this.state.processID}</h3>
+                    <h3 className='col-md-2'>Phase ID: {this.state.phaseID}</h3>
+                    <div className='col-md-4'></div>
                 </div>
             </div>
         );
