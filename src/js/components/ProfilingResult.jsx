@@ -97,8 +97,7 @@ const CPUTable = (props) => {
                 <tr>
                     <th className='col-md-2'>Type</th>
                     <th className='col-md-3'># Accesses</th>
-                    <th className='col-md-7'>Ratio</th>
-                    <th></th>
+                    <th className='col-md'>Ratio</th>
                 </tr>
                 <CPUTableRow name='Instruction' counters={value.instruction} />
                 <CPUTableRow name='Load' counters={value.load} />
@@ -122,10 +121,9 @@ const BranchTable = (props) => {
                 <tr>
                     <th className='col-md-2'>Type</th>
                     <th className='col-md-3'># Accesses</th>
-                    <th className='col-md-2'>Miss Rate</th>
-                    <th className='col-md-2'># Hits</th>
-                    <th className='col-md-2'># Misses</th>
-                    <th></th>
+                    <th className='col-md'>Miss Rate</th>
+                    <th className='col-md'># Hits</th>
+                    <th className='col-md'># Misses</th>
                 </tr>
                 <tr>
                     <td>Summary</td>
@@ -135,7 +133,6 @@ const BranchTable = (props) => {
                     </td>
                     <td className='align-right'>{value.hit}</td>
                     <td className='align-right'>{value.miss}</td>
-                    <td></td>
                 </tr>
             </tbody>
         </table>
@@ -154,7 +151,6 @@ const CacheTableRaw = (props) => {
             </td>
             <td className='align-right'>{counters.readMiss}</td>
             <td className='align-right'>{counters.writeMiss}</td>
-            <td></td>
         </tr>
     );
 };
@@ -168,10 +164,9 @@ const CacheTable = (props) => {
                 <tr>
                     <th className='col-md-2'>Level</th>
                     <th className='col-md-3'># Accesses</th>
-                    <th className='col-md-2'>Miss Rate</th>
-                    <th className='col-md-2'># Read Misses</th>
-                    <th className='col-md-2'># Write Misses</th>
-                    <th></th>
+                    <th className='col-md'>Miss Rate</th>
+                    <th className='col-md'># Read Misses</th>
+                    <th className='col-md'># Write Misses</th>
                 </tr>
                 <CacheTableRaw name='Level 2' counters={value.level2}/>
                 <CacheTableRaw name='I Cache' counters={value.iCache}/>
@@ -186,26 +181,24 @@ const TimeTable = (props) => {
     return (
         <table className='table table-hover'>
             <caption>
-                Time (ms) - Wallclock time elapsed {round(value.host / 1e9, 3)} s
+                Time - Wallclock time elapsed {round(value.host / 1e9, 3)} s
             </caption>
             <tbody>
                 <tr>
-                    <th className='col-md-1'>Target</th>
-                    <th className='col-md-1'>CPU</th>
-                    <th className='col-md-1'>Branch</th>
-                    <th className='col-md-1'>Cache</th>
-                    <th className='col-md-1'>Memory</th>
-                    <th className='col-md-1'>IO</th>
-                    <th></th>
+                    <th className='col-md'>Target</th>
+                    <th className='col-md'>CPU</th>
+                    <th className='col-md'>Branch</th>
+                    <th className='col-md'>Cache</th>
+                    <th className='col-md'>Memory</th>
+                    <th className='col-md'>IO</th>
                 </tr>
                 <tr>
-                    <td className='align-right'>{round(value.target / 1e6, 3)}</td>
-                    <td className='align-right'>{round(value.cpu / 1e6, 3)}</td>
-                    <td className='align-right'>{round(value.branch / 1e6, 3)}</td>
-                    <td className='align-right'>{round(value.cache / 1e6, 3)}</td>
-                    <td className='align-right'>{round(value.systemMemory / 1e6, 3)}</td>
-                    <td className='align-right'>{round(value.ioMemory / 1e6, 3)}</td>
-                    <td></td>
+                    <td className='align-right'>{round(value.target / 1e6, 3)} ms</td>
+                    <td className='align-right'>{round(value.cpu / 1e6, 3)} ms</td>
+                    <td className='align-right'>{round(value.branch / 1e6, 3)} ms</td>
+                    <td className='align-right'>{round(value.cache / 1e6, 3)} ms</td>
+                    <td className='align-right'>{round(value.systemMemory / 1e6, 3)} ms</td>
+                    <td className='align-right'>{round(value.ioMemory / 1e6, 3)} ms</td>
                 </tr>
             </tbody>
         </table>
