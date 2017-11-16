@@ -194,12 +194,15 @@ def get_phase_prof(request, process_id, phase_id):
     return json.dumps(counters)
 
 
-@app.route('/phase/<int:phase_id>/codes', defaults={'process_id': None})
-@app.route('/process/<process_id>/phase/<int:phase_id>/codes')
+@app.route('/phase/<int:phase_id>/codes', defaults={'process_id': None, 'query': None})
+@app.route('/phase/<int:phase_id>/codes/<query>', defaults={'process_id': None})
+@app.route('/process/<process_id>/phase/<int:phase_id>/codes', defaults={'query': None})
+@app.route('/process/<process_id>/phase/<int:phase_id>/codes/<query>')
 @timed
-def get_phase_code(request, process_id, phase_id):
+def get_phase_code(request, process_id, phase_id, query):
     argv = get_args(request)
     process_id = process_id or 'default_'    # set process_id to default
+    query = query or 'rawData'    # set query to default
     proc = processes[process_id]
     # Create new phase list according to the inputs
     mapping_table = utils.get_phase_mapping(proc['similarityMatrix'], argv['similarityThreshold'])
@@ -210,8 +213,35 @@ def get_phase_code(request, process_id, phase_id):
     ]
 
     codes = utils.apply_middleware(middlewares, proc['phases'])
+    retValue = {}
+    if query == 'rawData':
+        # Nothing to do, simply return the raw data
+        retValue = codes
+    elif query == 'files':
+        file_list = set()
+        for code in codes:
+            file_list.add(''.join(code['line'].split(':')[:-1]))
+        # Discard empty string if present
+        file_list.discard('')
+        retValue = list(file_list)
     set_response_for_json(request)
-    return json.dumps(codes)
+    return json.dumps(retValue)
+
+
+@app.route('/host/file')
+def get_host_file(request):
+    argv = get_args(request)
+    file_path = argv['filePath']
+
+    retValue = []
+    try:
+        with open(file_path, 'r') as f:
+            retValue = f.read().splitlines()
+    except IOError:
+        if file_path:    # If it's a valid value and not empty string
+            logger.error('Unable to open file "{}"'.format(file_path))
+    set_response_for_json(request)
+    return json.dumps(retValue)
 
 
 def get_descriptions():
