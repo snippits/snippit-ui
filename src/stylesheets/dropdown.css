@@ -11,7 +11,7 @@
     background-color: #fff;
     color: #444444;
     font-size: large;
-    line-height: 16px !important;
+    line-height: initial;
     appearance: none;
     /* this is must */
 
