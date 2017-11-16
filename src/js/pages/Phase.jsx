@@ -25,9 +25,9 @@ export default class Phase extends React.Component {
         return (
             <div>
                 <PhaseTimeline similarityThreshold={90}/>
-                <PhaseTreeMap />
                 <CodeResult />
                 <ProfilingResult />
+                <PhaseTreeMap />
             </div>
         );
     }
