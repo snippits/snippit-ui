@@ -26,7 +26,7 @@ def merge_phase_to(target_p, source_p):
     # Append the list of codes
     target_p['codes'] += source_p['codes']
     # Accumulate the number of windows
-    target_p['numWidows'] += source_p['numWidows']
+    target_p['numWindows'] += source_p['numWindows']
     # Accumulate the performance counters
     utils.deepupdate(target_p['counters'], source_p['counters'])
     # Fix the calculated values, i.e., miss rate, accuracy, etc.
