@@ -86,6 +86,9 @@ def load(proc_path):
         process = ret_dict[str(dirname)]
         # Resolve the pathes
         if process['phases']:
+            for phase in process['phases']:
+                phase['codes'] = Hashable(
+                    [code for code in phase['codes'] if '/home/buildslave/' not in code['line']])
             code.resolve_path(process['phases'])
             file_list = code.parse_file_list(process['phases'])
             process['workDirs'] = code.locate_working_directory(file_list)
