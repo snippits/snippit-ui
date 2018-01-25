@@ -58,7 +58,7 @@ if os.environ.get('DEBUG'):
 
 def get_args(request):
     if request.method.decode() == 'POST':
-        ret = json.loads(request.content.read())
+        ret = json.loads(request.content.read().decode('utf-8'))
     elif request.method.decode() == 'GET':
         ret = {}
         for kv in request.args:
