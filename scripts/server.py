@@ -236,7 +236,7 @@ def get_host_file(request):
     retValue = []
     try:
         with open(file_path, 'r') as f:
-            retValue = f.read().splitlines()
+            retValue = [''] + f.read().splitlines()
     except IOError:
         if file_path:    # If it's a valid value and not empty string
             logger.error('Unable to open file "{}"'.format(file_path))
