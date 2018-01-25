@@ -22,7 +22,7 @@ def append_inst_breakdown(phase_result):
 
 def load_phase(path):
     phase_path = path + '/phases'
-    with open(phase_path) as json_data:
+    with open(phase_path, errors='replace') as json_data:
         return json.load(json_data, cls=CustomJSONDecoder, list_type=Hashable)
     return {}
 
