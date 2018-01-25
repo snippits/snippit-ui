@@ -189,7 +189,7 @@ export default class PhaseTimeline extends React.Component {
 
     selectEvent(event) {
         const selectedItem = event.target['y'];
-        const selectedProcessID = parseInt(event.target.series.name) || null;
+        const selectedProcessID = event.target.series.name || null;
 
         this.setState({processID: selectedProcessID, phaseID: selectedItem});
         if (selectedItem && selectedProcessID) {
