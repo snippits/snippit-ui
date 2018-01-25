@@ -113,6 +113,7 @@ class HighlightedCode extends React.Component {
         if (typeof values === 'string') {
             return values;
         } else {
+            if (values.length >= 12000) return <tr></tr>;
             return values.map((code, i) =>
                 <tr key={i} className='no-border'>
                     <td className='col-md-1 walk-count'>{code.walk}</td>
